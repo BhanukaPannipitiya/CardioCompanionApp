@@ -5,16 +5,23 @@
 //  Created by Bhanuka  Pannipitiya  on 2025-04-15.
 //
 
+// CardioCompanionApp/CardioCompanionApp.swift
 import SwiftUI
 
 @main
-struct CardioCompanionAppApp: App {
-    let persistenceController = PersistenceController.shared
+struct CardioCompanionApp: App {
+    @StateObject private var loginViewModel = LoginViewModel()
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environment(\.managedObjectContext, persistenceController.container.viewContext)
+            if loginViewModel.isAuthenticated {
+                NavigationStack {
+                    DashboardView()
+                }
+            } else {
+                LoginView()
+                    .environmentObject(loginViewModel)
+            }
         }
     }
 }
