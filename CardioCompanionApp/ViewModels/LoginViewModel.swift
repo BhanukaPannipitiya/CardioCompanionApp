@@ -13,6 +13,12 @@ class LoginViewModel: ObservableObject {
 
     init() {
         self.isAuthenticated = UserDefaults.standard.bool(forKey: "isAuthenticated")
+        // Load credentials from Keychain on init
+        let credentials = KeychainService.shared.getCredentials()
+        if let savedEmail = credentials.email, let savedPassword = credentials.password {
+            self.email = savedEmail
+            self.password = savedPassword
+        }
     }
 
     func login() {
@@ -21,6 +27,9 @@ class LoginViewModel: ObservableObject {
                 switch result {
                 case .success(let user):
                     print("Login successful for user: \(user.email)")
+                    // Save credentials to Keychain
+                    let saved = KeychainService.shared.saveCredentials(email: self?.email ?? "", password: self?.password ?? "")
+                    print("Credentials saved to Keychain: \(saved)")
                     self?.isAuthenticated = true
                     self?.errorMessage = nil
                 case .failure(let error):

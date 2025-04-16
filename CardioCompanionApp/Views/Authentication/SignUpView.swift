@@ -1,11 +1,10 @@
-// CardioCompanionApp/Views/Authentication/LoginView.swift
+// CardioCompanionApp/Views/Authentication/SignUpView.swift
 import SwiftUI
-import LocalAuthentication
+import AuthenticationServices
 
-struct LoginView: View {
-    @StateObject private var viewModel = LoginViewModel()
+struct SignUpView: View {
+    @StateObject private var viewModel = SignUpViewModel()
     @State private var isShowingPassword = false
-    @State private var showBiometricError = false
 
     var body: some View {
         NavigationStack {
@@ -16,13 +15,28 @@ struct LoginView: View {
                     .foregroundColor(.red)
                     .padding(.top, 40)
 
-                Text("Welcome Back")
+                Text("Create Account")
                     .font(.largeTitle)
                     .fontWeight(.bold)
 
-                Text("Sign in to continue your health journey")
+                Text("Join CardioCompanion today!")
                     .font(.subheadline)
                     .foregroundColor(.gray)
+
+                HStack {
+                    Image(systemName: "person.fill")
+                        .foregroundColor(.gray)
+                        .frame(width: 20)
+                    TextField("Full Name", text: $viewModel.name)
+                        .textFieldStyle(PlainTextFieldStyle())
+                        .padding(.vertical, 10)
+                }
+                .padding(.horizontal)
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color.gray.opacity(0.5), lineWidth: 1)
+                )
+                .padding(.horizontal)
 
                 HStack {
                     Image(systemName: "envelope.fill")
@@ -73,9 +87,9 @@ struct LoginView: View {
                 }
 
                 Button(action: {
-                    viewModel.login()
+                    viewModel.signUp()
                 }) {
-                    Text("Login")
+                    Text("Sign Up")
                         .frame(maxWidth: .infinity)
                         .padding()
                         .background(Color.blue)
@@ -84,86 +98,58 @@ struct LoginView: View {
                         .padding(.horizontal)
                 }
 
-                NavigationLink(
-                    destination: ForgotPasswordView(),
-                    label: {
-                        Text("Forgot Password?")
-                            .font(.caption)
-                            .foregroundColor(.blue)
+                SignInWithAppleButton(
+                    .signUp,
+                    onRequest: { request in
+                        request.requestedScopes = [.fullName, .email]
+                    },
+                    onCompletion: { result in
+                        switch result {
+                        case .success(let authorization):
+                            if let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential {
+                                let userID = appleIDCredential.user
+                                let fullName = appleIDCredential.fullName
+                                let email = appleIDCredential.email
+                                let name = "\(fullName?.givenName ?? "") \(fullName?.familyName ?? "")".trimmingCharacters(in: .whitespaces)
+
+                                if let identityTokenData = appleIDCredential.identityToken,
+                                   let identityToken = String(data: identityTokenData, encoding: .utf8) {
+                                    let appleUser = AppleUser(name: name.isEmpty ? nil : name, email: email)
+                                    viewModel.signUpWithApple(identityToken: identityToken, user: appleUser)
+                                } else {
+                                    print("Failed to get Apple identity token")
+                                }
+                            }
+                        case .failure(let error):
+                            print("Sign in with Apple failed: \(error.localizedDescription)")
+                            viewModel.errorMessage = error.localizedDescription
+                        }
                     }
                 )
-
-                Button(action: {
-                    authenticateWithBiometrics()
-                }) {
-                    Image(systemName: "faceid")
-                        .resizable()
-                        .frame(width: 40, height: 40)
-                        .foregroundColor(.blue)
-                        .padding()
-                        .background(Circle().fill(Color.gray.opacity(0.1)))
-                }
-                .alert(isPresented: $showBiometricError) {
-                    Alert(
-                        title: Text("Biometric Authentication Failed"),
-                        message: Text("Please use your email and password to log in."),
-                        dismissButton: .default(Text("OK"))
-                    )
-                }
+                .frame(height: 50)
+                .cornerRadius(10)
+                .padding(.horizontal)
 
                 NavigationLink(
-                    destination: SignUpView(),
+                    destination: LoginView(),
                     label: {
-                        Text("Don't have an account? Sign Up")
+                        Text("Already have an account? Sign In")
                             .foregroundColor(.blue)
                     }
                 )
 
                 Spacer()
             }
-            .padding(.top, 20)
             .navigationBarHidden(true)
             .navigationDestination(isPresented: $viewModel.isAuthenticated) {
                 DashboardView()
             }
         }
     }
-
-    private func authenticateWithBiometrics() {
-        let context = LAContext()
-        var error: NSError?
-
-        if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) {
-            let reason = "Authenticate to access your health data"
-
-            context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { success, authenticationError in
-                DispatchQueue.main.async {
-                    if success {
-                        // Retrieve credentials from Keychain
-                        let credentials = KeychainService.shared.getCredentials()
-                        if let email = credentials.email, let password = credentials.password {
-                            viewModel.email = email
-                            viewModel.password = password
-                            viewModel.login()
-                        } else {
-                            showBiometricError = true
-                            print("No credentials found in Keychain")
-                        }
-                    } else {
-                        showBiometricError = true
-                        print("Biometric authentication failed: \(authenticationError?.localizedDescription ?? "Unknown error")")
-                    }
-                }
-            }
-        } else {
-            showBiometricError = true
-            print("Biometric authentication not available: \(error?.localizedDescription ?? "Unknown error")")
-        }
-    }
 }
 
-struct LoginView_Previews: PreviewProvider {
+struct SignUpView_Previews: PreviewProvider {
     static var previews: some View {
-        LoginView()
+        SignUpView()
     }
 }
