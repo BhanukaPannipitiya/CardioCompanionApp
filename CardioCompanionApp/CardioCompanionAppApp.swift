@@ -16,7 +16,7 @@ struct CardioCompanionApp: App {
         WindowGroup {
             if loginViewModel.isAuthenticated {
                 NavigationStack {
-                    DashboardView()
+                    MainTabView()
                 }
             } else {
                 LoginView()
