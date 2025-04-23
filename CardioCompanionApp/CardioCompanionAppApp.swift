@@ -10,17 +10,18 @@ import SwiftUI
 
 @main
 struct CardioCompanionApp: App {
-    @StateObject private var loginViewModel = LoginViewModel()
+    @StateObject private var authManager = AuthManager.shared
 
     var body: some Scene {
         WindowGroup {
-            if loginViewModel.isAuthenticated {
+            if authManager.isAuthenticated {
                 NavigationStack {
                     MainTabView()
                 }
+                .environmentObject(authManager)
             } else {
                 LoginView()
-                    .environmentObject(loginViewModel)
+                    .environmentObject(authManager)
             }
         }
     }

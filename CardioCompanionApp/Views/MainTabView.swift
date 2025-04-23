@@ -4,6 +4,7 @@ struct MainTabView: View {
     @State private var selectedTab = 0
     @State private var showLogSymptoms = false
     @State private var showLogVitals = false
+    @EnvironmentObject private var authManager: AuthManager
     
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -21,25 +22,19 @@ struct MainTabView: View {
                 }
                 .tag(1)
             
-            Button(action: { showLogSymptoms = true }) {
-                Image(systemName: "clipboard.fill")
-                Text("Log Symptoms")
-            }
-            .tabItem {
-                Image(systemName: "clipboard.fill")
-                Text("Log Symptoms")
-            }
-            .tag(2)
+            SymptomLogView(userId: authManager.currentUserId ?? "")
+                .tabItem {
+                    Image(systemName: "clipboard.fill")
+                    Text("Log Symptoms")
+                }
+                .tag(2)
             
-            Button(action: { showLogVitals = true }) {
-                Image(systemName: "heart.fill")
-                Text("Log Vitals")
-            }
-            .tabItem {
-                Image(systemName: "heart.fill")
-                Text("Log Vitals")
-            }
-            .tag(3)
+            LogVitalsView()
+                .tabItem {
+                    Image(systemName: "heart.fill")
+                    Text("Log Vitals")
+                }
+                .tag(3)
             
             ProfileView()
                 .tabItem {
@@ -49,7 +44,7 @@ struct MainTabView: View {
                 .tag(4)
         }
         .sheet(isPresented: $showLogSymptoms) {
-            LogSymptomsView()
+            SymptomLogView(userId: authManager.currentUserId ?? "")
         }
         .sheet(isPresented: $showLogVitals) {
             LogVitalsView()

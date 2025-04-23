@@ -1,6 +1,11 @@
 import SwiftUI
 
 struct ProfileView: View {
+    @Environment(\.dismiss) private var dismiss
+    @State private var showingLogoutAlert = false
+    @EnvironmentObject private var authManager: AuthManager
+    private let apiService = APIService.shared
+    
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
@@ -127,11 +132,17 @@ struct ProfileView: View {
                     SettingsButton(icon: "bell.fill", title: "Notifications")
                     SettingsButton(icon: "gear", title: "Settings")
                     SettingsButton(icon: "questionmark.circle", title: "Help")
-                    Button(action: {}) {
-                        Text("LogOut")
-                            .foregroundColor(.red)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding()
+                    Button(action: {
+                        showingLogoutAlert = true
+                    }) {
+                        HStack {
+                            Image(systemName: "rectangle.portrait.and.arrow.right")
+                                .foregroundColor(.red)
+                            Text("Log Out")
+                                .foregroundColor(.red)
+                            Spacer()
+                        }
+                        .padding()
                     }
                 }
                 .background(Color.white)
@@ -144,6 +155,15 @@ struct ProfileView: View {
         .background(Color(.systemGray6))
         .safeAreaInset(edge: .bottom) {
             Color.clear.frame(height: 0)
+        }
+        .alert("Log Out", isPresented: $showingLogoutAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Log Out", role: .destructive) {
+                apiService.logout()
+                authManager.logout()
+            }
+        } message: {
+            Text("Are you sure you want to log out?")
         }
     }
 }

@@ -37,11 +37,6 @@ struct DashboardView: View {
             .padding(.vertical)
         }
         .background(Color(.systemGray6))
-        .navigationBarHidden(true)
-        .toolbar(.hidden, for: .navigationBar)
-        .safeAreaInset(edge: .bottom) {
-            Color.clear.frame(height: 0)
-        }
     }
 }
 
