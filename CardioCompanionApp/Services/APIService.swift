@@ -460,6 +460,96 @@ class APIService {
         token = nil
         AuthManager.shared.logout()
     }
+
+    func fetchSymptomLogs(startDate: Date? = nil, endDate: Date? = nil, completion: @escaping (Result<[SymptomLog], Error>) -> Void) {
+        var urlComponents = URLComponents(string: "\(baseURL)/api/symptoms")!
+        
+        // Add date range query parameters if provided
+        if let startDate = startDate, let endDate = endDate {
+            let dateFormatter = ISO8601DateFormatter()
+            urlComponents.queryItems = [
+                URLQueryItem(name: "startDate", value: dateFormatter.string(from: startDate)),
+                URLQueryItem(name: "endDate", value: dateFormatter.string(from: endDate))
+            ]
+        }
+        
+        guard let url = urlComponents.url else {
+            let error = NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])
+            print("❌ Invalid URL: \(urlComponents.string ?? "")")
+            completion(.failure(error))
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        guard let token = token else {
+            print("❌ No token available for symptom fetch")
+            let error = NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "No authentication token available"])
+            completion(.failure(error))
+            return
+        }
+        
+        // Debug information
+        print("🔑 Current token: \(token)")
+        if let userId = AuthManager.shared.currentUserId {
+            print("👤 Current userId: \(userId)")
+        } else {
+            print("⚠️ No userId found in AuthManager")
+        }
+        if let refreshToken = KeychainService.shared.getRefreshToken() {
+            print("🔄 Refresh token available")
+        } else {
+            print("⚠️ No refresh token available")
+        }
+        
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        print("🚀 Fetching symptom logs from: \(url)")
+        print("📝 Request headers: \(request.allHTTPHeaderFields ?? [:])")
+        
+        URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
+            if let error = error {
+                print("❌ Network error: \(error.localizedDescription)")
+                completion(.failure(error))
+                return
+            }
+            
+            if let httpResponse = response as? HTTPURLResponse {
+                print("📥 HTTP Response Status: \(httpResponse.statusCode)")
+                
+                switch httpResponse.statusCode {
+                case 200...299:
+                    guard let data = data else {
+                        print("❌ No data received from server")
+                        let error = NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "No data received from server"])
+                        completion(.failure(error))
+                        return
+                    }
+                    
+                    do {
+                        let symptomLogs = try JSONDecoder().decode([SymptomLog].self, from: data)
+                        print("✅ Successfully decoded \(symptomLogs.count) symptom logs")
+                        completion(.success(symptomLogs))
+                    } catch {
+                        print("❌ Decoding error: \(error)")
+                        if let jsonString = String(data: data, encoding: .utf8) {
+                            print("📥 Raw response: \(jsonString)")
+                        }
+                        completion(.failure(error))
+                    }
+                case 401:
+                    print("❌ Unauthorized - Token may be invalid or expired")
+                    let error = NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "Authentication failed. Please log in again."])
+                    completion(.failure(error))
+                default:
+                    print("❌ Server error: \(httpResponse.statusCode)")
+                    let error = NSError(domain: "", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "Server error occurred"])
+                    completion(.failure(error))
+                }
+            }
+        }.resume()
+    }
 }
 
 

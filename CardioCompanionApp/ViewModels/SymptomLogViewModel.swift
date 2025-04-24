@@ -12,7 +12,7 @@ class SymptomLogViewModel: ObservableObject {
     
     private var cancellables = Set<AnyCancellable>()
     private let apiService = APIService.shared
-    private let userId: String
+    let userId: String
     
     init(userId: String) {
         self.userId = userId
@@ -45,6 +45,7 @@ class SymptomLogViewModel: ObservableObject {
         errorMessage = nil
         
         let symptomLog = SymptomLog(
+            id: UUID().uuidString,
             timestamp: selectedDate,
             symptoms: Array(selectedSymptoms),
             severityRatings: severityRatings,
