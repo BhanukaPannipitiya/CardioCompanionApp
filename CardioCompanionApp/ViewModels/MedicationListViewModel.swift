@@ -4,6 +4,8 @@ import Combine
 class MedicationListViewModel: ObservableObject {
     @Published var medications: [Medication] = []
     @Published var adherenceScore: Double = 0.0
+    @Published var isLoading = false
+    @Published var errorMessage: String?
 
     private var cancellables = Set<AnyCancellable>()
 
@@ -24,12 +26,19 @@ class MedicationListViewModel: ObservableObject {
     }
 
     func fetchMedications() {
-        APIService.shared.fetchMedications { result in
-            switch result {
-            case .success(let medications):
-                self.medications = medications
-            case .failure(let error):
-                print("Failed to fetch medications: \(error)")
+        isLoading = true
+        errorMessage = nil
+        
+        APIService.shared.fetchMedications { [weak self] result in
+            DispatchQueue.main.async {
+                self?.isLoading = false
+                switch result {
+                case .success(let medications):
+                    self?.medications = medications
+                case .failure(let error):
+                    self?.errorMessage = "Failed to fetch medications: \(error.localizedDescription)"
+                    print("Failed to fetch medications: \(error)")
+                }
             }
         }
     }
@@ -61,12 +70,16 @@ class MedicationListViewModel: ObservableObject {
     }
 
     func addMedication(_ medication: Medication) {
-        APIService.shared.addMedication(medication) { result in
-            switch result {
-            case .success(let addedMedication):
-                self.medications.append(addedMedication)
-            case .failure(let error):
-                print("Failed to add medication: \(error)")
+        APIService.shared.addMedication(medication) { [weak self] result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let addedMedication):
+                    self?.medications.append(addedMedication)
+                    // Fetch medications to ensure we have the latest data
+                    self?.fetchMedications()
+                case .failure(let error):
+                    print("Failed to add medication: \(error)")
+                }
             }
         }
     }

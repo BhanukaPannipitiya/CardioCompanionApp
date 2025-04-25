@@ -24,54 +24,60 @@ struct MedicationListView: View {
                 .frame(maxWidth: .infinity) // Center the content
             }
             
-            // Test Notification Button
-            Section {
-                Button(action: {
-                    NotificationManager.shared.scheduleTestNotification()
-                }) {
-                    HStack {
-                        Image(systemName: "bell.fill")
-                        Text("Test Notification")
-                    }
-                }
-            }
-            
             // Section for Medications
             Section("MEDICATIONS") {
-                ForEach(viewModel.medications) { medication in
-                    // Group each medication and its schedules
-                    VStack(alignment: .leading) {
-                        Text(medication.name).font(.title3).bold()
-                        if let dosage = medication.dosage {
-                            Text(dosage).font(.subheadline).foregroundColor(.gray)
+                if viewModel.isLoading {
+                    ProgressView()
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding()
+                } else if let errorMessage = viewModel.errorMessage {
+                    VStack {
+                        Text(errorMessage)
+                            .foregroundColor(.red)
+                            .font(.subheadline)
+                        Button("Retry") {
+                            viewModel.fetchMedications()
                         }
-                        ForEach(medication.schedule, id: \.self) { scheduleTime in
-                            HStack {
-                                // Use Self.timeFormatter to access the static property
-                                Text("Schedule: \(scheduleTime, formatter: Self.timeFormatter)")
-                                Spacer()
-                                Image(systemName: viewModel.isTaken(medication: medication, scheduleTime: scheduleTime) ? "checkmark.circle.fill" : "circle")
-                                    .foregroundColor(viewModel.isTaken(medication: medication, scheduleTime: scheduleTime) ? .green : .gray)
-                                    .onTapGesture {
-                                        viewModel.toggleTakenStatus(for: medication, scheduleTime: scheduleTime)
-                                    }
+                        .font(.caption)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding()
+                } else {
+                    ForEach(viewModel.medications) { medication in
+                        // Group each medication and its schedules
+                        VStack(alignment: .leading) {
+                            Text(medication.name).font(.title3).bold()
+                            if let dosage = medication.dosage {
+                                Text(dosage).font(.subheadline).foregroundColor(.gray)
                             }
-                            .padding(.vertical, 2)
+                            ForEach(medication.schedule, id: \.self) { scheduleTime in
+                                HStack {
+                                    // Use Self.timeFormatter to access the static property
+                                    Text("Schedule: \(scheduleTime, formatter: Self.timeFormatter)")
+                                    Spacer()
+                                    Image(systemName: viewModel.isTaken(medication: medication, scheduleTime: scheduleTime) ? "checkmark.circle.fill" : "circle")
+                                        .foregroundColor(viewModel.isTaken(medication: medication, scheduleTime: scheduleTime) ? .green : .gray)
+                                        .onTapGesture {
+                                            viewModel.toggleTakenStatus(for: medication, scheduleTime: scheduleTime)
+                                        }
+                                }
+                                .padding(.vertical, 2)
+                            }
+                        }
+                        .padding(.vertical, 4) // Add padding around each medication group
+                    }
+                    .onDelete(perform: viewModel.deleteMedication) // Enable swipe to delete
+                    
+                    Button {
+                        showingAddMedicationSheet = true
+                    } label: {
+                        HStack {
+                            Image(systemName: "plus.circle.fill")
+                            Text("Add Medication")
                         }
                     }
-                    .padding(.vertical, 4) // Add padding around each medication group
+                    .foregroundColor(.blue) // Standard button color
                 }
-                .onDelete(perform: viewModel.deleteMedication) // Enable swipe to delete
-                
-                Button {
-                    showingAddMedicationSheet = true
-                } label: {
-                    HStack {
-                        Image(systemName: "plus.circle.fill")
-                        Text("Add Medication")
-                    }
-                }
-                .foregroundColor(.blue) // Standard button color
             }
         }
         .navigationTitle("Medication")

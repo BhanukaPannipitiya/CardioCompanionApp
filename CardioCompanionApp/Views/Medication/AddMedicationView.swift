@@ -69,6 +69,8 @@ struct AddMedicationView: View {
             takenToday: [:]
         )
         viewModel.addMedication(newMedication)
+        // Fetch medications after adding a new one
+        viewModel.fetchMedications()
     }
 }
 

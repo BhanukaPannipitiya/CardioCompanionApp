@@ -104,27 +104,4 @@ class NotificationManager {
             print("  - Notification center enabled: \(settings.notificationCenterSetting == .enabled)")
         }
     }
-    
-    func scheduleTestNotification() {
-        print("🔔 Scheduling test notification")
-        
-        let content = UNMutableNotificationContent()
-        content.title = "Test Notification"
-        content.body = "This is a test notification for your medication reminder"
-        content.sound = UNNotificationSound.default
-        
-        // Schedule for 10 seconds from now
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 10, repeats: false)
-        
-        let request = UNNotificationRequest(identifier: "test-notification", content: content, trigger: trigger)
-        
-        let center = UNUserNotificationCenter.current()
-        center.add(request) { error in
-            if let error = error {
-                print("❌ Error scheduling test notification: \(error.localizedDescription)")
-            } else {
-                print("✅ Successfully scheduled test notification")
-            }
-        }
-    }
 } 

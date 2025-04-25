@@ -46,19 +46,19 @@ struct Medication: Codable, Identifiable {
     // Encode to JSON
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(id.uuidString, forKey: .id)
+        try container.encode(id.uuidString, forKey: .id)  // This will encode as "_id" in JSON
         try container.encode(name, forKey: .name)
-        try container.encodeIfPresent(dosage, forKey: .dosage)
+        try container.encode(dosage, forKey: .dosage)
         try container.encode(schedule, forKey: .schedule)
-
+        
         // Encode takenToday as array of entries
         let takenTodayData = takenToday.map { TakenTodayEntry(date: $0.key, taken: $0.value) }
         try container.encode(takenTodayData, forKey: .takenToday)
     }
 }
 
-// Helper struct for takenToday
-private struct TakenTodayEntry: Codable {
+// Helper struct for encoding/decoding takenToday entries
+struct TakenTodayEntry: Codable {
     let date: Date
     let taken: Bool
 }
