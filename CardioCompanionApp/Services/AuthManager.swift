@@ -17,24 +17,24 @@ class AuthManager: ObservableObject {
     private init() {
         self.isAuthenticated = UserDefaults.standard.bool(forKey: "isAuthenticated")
         self.currentUserId = UserDefaults.standard.string(forKey: "currentUserId")
-        print("🔐 AuthManager initialized - isAuthenticated: \(isAuthenticated), userId: \(currentUserId ?? "nil")")
+        print(" AuthManager initialized - isAuthenticated: \(isAuthenticated), userId: \(currentUserId ?? "nil")")
     }
     
     func login(userId: String) {
         isAuthenticated = true
         currentUserId = userId
-        print("🔐 User logged in - userId: \(userId)")
+        print("User logged in - userId: \(userId)")
     }
     
     func login(user: User) {
         isAuthenticated = true
         currentUserId = user.id
-        print("🔐 User logged in - userId: \(user.id ?? "nil")")
+        print("User logged in - userId: \(user.id ?? "nil")")
     }
     
     func logout() {
         isAuthenticated = false
         currentUserId = nil
-        print("🔐 User logged out")
+        print(" User logged out")
     }
 } 

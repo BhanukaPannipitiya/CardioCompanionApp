@@ -28,6 +28,13 @@
 			remoteGlobalIDString = A74D6F4F2DBBD14F00BD7370;
 			remoteInfo = CreateAppointmentIntent;
 		};
+		A7A8DCD02DBC117E00248789 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A7179E012DAE236A006A3B56 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A7179E082DAE236A006A3B56;
+			remoteInfo = CardioCompanionApp;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -51,6 +58,7 @@
 		A74D6F522DBBD14F00BD7370 /* Intents.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Intents.framework; path = System/Library/Frameworks/Intents.framework; sourceTree = SDKROOT; };
 		A74D6F5C2DBBD15000BD7370 /* CreateAppointmentIntentUI.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = CreateAppointmentIntentUI.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		A74D6F5D2DBBD15000BD7370 /* IntentsUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IntentsUI.framework; path = System/Library/Frameworks/IntentsUI.framework; sourceTree = SDKROOT; };
+		A7A8DCCC2DBC117E00248789 /* CardioCompanionAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CardioCompanionAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -122,6 +130,11 @@
 			path = CreateAppointmentIntentUI;
 			sourceTree = "<group>";
 		};
+		A7A8DCCD2DBC117E00248789 /* CardioCompanionAppTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = CardioCompanionAppTests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -148,6 +161,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A7A8DCC92DBC117E00248789 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -157,6 +177,7 @@
 				A7179E0B2DAE236A006A3B56 /* CardioCompanionApp */,
 				A74D6F542DBBD14F00BD7370 /* CreateAppointmentIntent */,
 				A74D6F5F2DBBD15000BD7370 /* CreateAppointmentIntentUI */,
+				A7A8DCCD2DBC117E00248789 /* CardioCompanionAppTests */,
 				A74D6F512DBBD14F00BD7370 /* Frameworks */,
 				A7179E0A2DAE236A006A3B56 /* Products */,
 			);
@@ -168,6 +189,7 @@
 				A7179E092DAE236A006A3B56 /* CardioCompanionApp.app */,
 				A74D6F502DBBD14F00BD7370 /* CreateAppointmentIntent.appex */,
 				A74D6F5C2DBBD15000BD7370 /* CreateAppointmentIntentUI.appex */,
+				A7A8DCCC2DBC117E00248789 /* CardioCompanionAppTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -253,6 +275,29 @@
 			productReference = A74D6F5C2DBBD15000BD7370 /* CreateAppointmentIntentUI.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		A7A8DCCB2DBC117E00248789 /* CardioCompanionAppTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A7A8DCD22DBC117E00248789 /* Build configuration list for PBXNativeTarget "CardioCompanionAppTests" */;
+			buildPhases = (
+				A7A8DCC82DBC117E00248789 /* Sources */,
+				A7A8DCC92DBC117E00248789 /* Frameworks */,
+				A7A8DCCA2DBC117E00248789 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A7A8DCD12DBC117E00248789 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				A7A8DCCD2DBC117E00248789 /* CardioCompanionAppTests */,
+			);
+			name = CardioCompanionAppTests;
+			packageProductDependencies = (
+			);
+			productName = CardioCompanionAppTests;
+			productReference = A7A8DCCC2DBC117E00248789 /* CardioCompanionAppTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -271,6 +316,10 @@
 					};
 					A74D6F5B2DBBD15000BD7370 = {
 						CreatedOnToolsVersion = 16.1;
+					};
+					A7A8DCCB2DBC117E00248789 = {
+						CreatedOnToolsVersion = 16.1;
+						TestTargetID = A7179E082DAE236A006A3B56;
 					};
 				};
 			};
@@ -291,6 +340,7 @@
 				A7179E082DAE236A006A3B56 /* CardioCompanionApp */,
 				A74D6F4F2DBBD14F00BD7370 /* CreateAppointmentIntent */,
 				A74D6F5B2DBBD15000BD7370 /* CreateAppointmentIntentUI */,
+				A7A8DCCB2DBC117E00248789 /* CardioCompanionAppTests */,
 			);
 		};
 /* End PBXProject section */
@@ -311,6 +361,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		A74D6F5A2DBBD15000BD7370 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A7A8DCCA2DBC117E00248789 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -341,6 +398,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A7A8DCC82DBC117E00248789 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -353,6 +417,11 @@
 			isa = PBXTargetDependency;
 			target = A74D6F4F2DBBD14F00BD7370 /* CreateAppointmentIntent */;
 			targetProxy = A74D6F692DBBD15000BD7370 /* PBXContainerItemProxy */;
+		};
+		A7A8DCD12DBC117E00248789 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A7179E082DAE236A006A3B56 /* CardioCompanionApp */;
+			targetProxy = A7A8DCD02DBC117E00248789 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -656,6 +725,42 @@
 			};
 			name = Release;
 		};
+		A7A8DCD32DBC117E00248789 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5MFCUG2773;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = bhanuka.CardioCompanionAppTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CardioCompanionApp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/CardioCompanionApp";
+			};
+			name = Debug;
+		};
+		A7A8DCD42DBC117E00248789 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5MFCUG2773;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = bhanuka.CardioCompanionAppTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CardioCompanionApp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/CardioCompanionApp";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -691,6 +796,15 @@
 			buildConfigurations = (
 				A74D6F712DBBD15000BD7370 /* Debug */,
 				A74D6F722DBBD15000BD7370 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A7A8DCD22DBC117E00248789 /* Build configuration list for PBXNativeTarget "CardioCompanionAppTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A7A8DCD32DBC117E00248789 /* Debug */,
+				A7A8DCD42DBC117E00248789 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

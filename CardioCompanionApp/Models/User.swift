@@ -44,7 +44,7 @@ struct OTPResponse: Codable {
     
     enum CodingKeys: String, CodingKey {
         case message
-        case otpId = "otp_id"  // In case the API uses snake_case
+        case otpId = "otp_id"  
     }
 }
 

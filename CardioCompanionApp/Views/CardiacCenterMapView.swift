@@ -88,6 +88,9 @@ struct CardiacCenterMapView: View {
                                 .cornerRadius(4)
                         }
                     }
+                    .accessibilityLabel("\(center.name) Cardiac Center")
+                    .accessibilityHint("Double tap to view details including address, phone number, and current wait time")
+                    .accessibilityAddTraits(.isButton)
                 }
             }
             
@@ -96,6 +99,8 @@ struct CardiacCenterMapView: View {
                     Spacer()
                     CardiacCenterDetailView(center: center)
                         .transition(.move(edge: .bottom))
+                        .accessibilityLabel("Details for \(center.name)")
+                        .accessibilityHint("Swipe down to dismiss")
                 }
             }
         }

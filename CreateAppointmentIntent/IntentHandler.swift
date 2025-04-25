@@ -13,11 +13,11 @@ class IntentHandler: INExtension {
 class CreateAppointmentIntentHandler: NSObject, CreateAppointmentIntentHandling {
     func handle(intent: CreateAppointmentIntent, completion: @escaping (CreateAppointmentIntentResponse) -> Void) {
         let title = intent.title ?? "Untitled"
-        let dateComponents = intent.date // DateComponents? as per intent definition
+        let dateComponents = intent.date
         let location = intent.location ?? ""
         let note = intent.note ?? ""
         
-        // Convert DateComponents to Date, or use current date as fallback
+        
         let calendar = Calendar.current
         let date = dateComponents.flatMap { calendar.date(from: $0) } ?? Date()
         

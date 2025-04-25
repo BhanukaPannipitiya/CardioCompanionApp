@@ -50,11 +50,11 @@ class SignUpViewModel: ObservableObject {
             DispatchQueue.main.async {
                 switch result {
                 case .success(let user):
-                    print("✅ Apple sign-up successful for user: \(user.email)")
+                    print("Apple sign-up successful for user: \(user.email)")
                     self?.isAuthenticated = true
                     self?.errorMessage = nil
                 case .failure(let error):
-                    print("❌ Apple sign-up failed: \(error.localizedDescription)")
+                    print(" Apple sign-up failed: \(error.localizedDescription)")
                     self?.errorMessage = error.localizedDescription
                     self?.isAuthenticated = false
                 }

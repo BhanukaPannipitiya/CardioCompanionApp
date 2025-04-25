@@ -27,7 +27,7 @@ struct SymptomLog: Identifiable, Codable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decode(String.self, forKey: .id)
         
-        // Decode timestamp as ISO 8601 string
+      
         let timestampString = try container.decode(String.self, forKey: .timestamp)
         let dateFormatter = ISO8601DateFormatter()
         dateFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]

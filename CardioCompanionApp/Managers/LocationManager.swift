@@ -35,7 +35,7 @@ extension LocationManager: CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
         self.location = location
-        // Once we get the location, we can stop updating to save battery
+       
         manager.stopUpdatingLocation()
     }
     

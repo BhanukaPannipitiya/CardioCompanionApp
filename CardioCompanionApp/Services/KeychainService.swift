@@ -15,7 +15,6 @@ class KeychainService {
     private let service = "com.example.CardioCompanionApp"
 
     func saveCredentials(email: String, password: String) -> Bool {
-        // Delete existing credentials to avoid duplicates
         deleteCredentials()
 
         // Save email
