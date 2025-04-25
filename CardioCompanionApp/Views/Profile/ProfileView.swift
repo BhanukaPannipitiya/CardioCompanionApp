@@ -3,8 +3,22 @@ import SwiftUI
 struct ProfileView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var showingLogoutAlert = false
+    @State private var isEditing = false
+    @State private var editedName: String = ""
+    @State private var editedEmail: String = ""
+    @State private var editedAddress: String = ""
+    @State private var editedDateOfBirth: Date = Date()
+    @State private var showingDatePicker = false
     @EnvironmentObject private var authManager: AuthManager
+    @StateObject private var viewModel = ProfileViewModel()
     private let apiService = APIService.shared
+    
+    private let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        return formatter
+    }()
     
     var body: some View {
         ScrollView {
@@ -24,13 +38,15 @@ struct ProfileView: View {
                     
                     Text("Welcome Back,")
                         .foregroundColor(.gray)
-                    Text("John Doe")
+                    Text(viewModel.profile?.name ?? "Loading...")
                         .font(.headline)
                     
-                    HStack {
-                        Image(systemName: "heart.fill")
-                            .foregroundColor(.red)
-                        Text("Post-Op Day 14")
+                    if let postOpDay = viewModel.profile?.postOpDay {
+                        HStack {
+                            Image(systemName: "heart.fill")
+                                .foregroundColor(.red)
+                            Text("Post-Op Day \(postOpDay)")
+                        }
                     }
                 }
                 
@@ -51,8 +67,8 @@ struct ProfileView: View {
                 
                 // Stats
                 HStack(spacing: 20) {
-                    StatView(value: "14", label: "Day Streak", color: .green)
-                    StatView(value: "450", label: "Points", color: .orange)
+                    StatView(value: "\(viewModel.profile?.streak ?? 0)", label: "Day Streak", color: .green)
+                    StatView(value: "\(viewModel.profile?.points ?? 0)", label: "Points", color: .orange)
                 }
                 
                 Button("Redeem Rewards") {
@@ -69,17 +85,73 @@ struct ProfileView: View {
                         Text("Profile")
                             .font(.headline)
                         Spacer()
-                        Button("Edit") {
+                        Button(isEditing ? "Save" : "Edit") {
+                            if isEditing {
+                                saveProfile()
+                            }
+                            isEditing.toggle()
                         }
                         .foregroundColor(.blue)
                     }
                     
-                    ProfileField(label: "Username")
-                    ProfileField(label: "First Name")
-                    ProfileField(label: "Last Name")
-                    ProfileField(label: "Email")
-                    ProfileField(label: "Address")
-                    ProfileField(label: "Date of birth")
+                    if isEditing {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Full Name")
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                            TextField("Enter full name", text: $editedName)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                            
+                            Text("Email")
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                            TextField("Enter email", text: $editedEmail)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                            
+                            Text("Address")
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                            TextField("Enter address", text: $editedAddress)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                            
+                            Text("Date of birth")
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                            HStack {
+                                Text(dateFormatter.string(from: editedDateOfBirth))
+                                    .foregroundColor(.primary)
+                                Spacer()
+                                Button(action: {
+                                    showingDatePicker.toggle()
+                                }) {
+                                    Image(systemName: "calendar")
+                                        .foregroundColor(.blue)
+                                }
+                            }
+                            .padding()
+                            .background(Color(.systemGray6))
+                            .cornerRadius(8)
+                            
+                            if showingDatePicker {
+                                DatePicker(
+                                    "Select Date of Birth",
+                                    selection: $editedDateOfBirth,
+                                    in: ...Date(),
+                                    displayedComponents: .date
+                                )
+                                .datePickerStyle(.graphical)
+                                .padding()
+                                .background(Color(.systemBackground))
+                                .cornerRadius(12)
+                                .shadow(radius: 5)
+                            }
+                        }
+                    } else {
+                        ProfileField(label: "Full Name", value: viewModel.profile?.name ?? "Not set")
+                        ProfileField(label: "Email", value: viewModel.profile?.email ?? "Not set")
+                        ProfileField(label: "Address", value: viewModel.profile?.address ?? "Not set")
+                        ProfileField(label: "Date of birth", value: formatDateOfBirth(viewModel.profile?.dateOfBirth))
+                    }
                 }
                 .padding()
                 .background(Color.white)
@@ -165,6 +237,49 @@ struct ProfileView: View {
         } message: {
             Text("Are you sure you want to log out?")
         }
+        .onAppear {
+            viewModel.fetchProfile()
+        }
+        .onChange(of: viewModel.profile) { newProfile in
+            if let profile = newProfile {
+                editedName = profile.name
+                editedEmail = profile.email
+                editedAddress = profile.address ?? ""
+                if let dob = profile.dateOfBirth, !dob.isEmpty {
+                    editedDateOfBirth = dateFormatter.date(from: dob) ?? Date()
+                }
+            }
+        }
+    }
+    
+    private func formatDateOfBirth(_ dateString: String?) -> String {
+        guard let dateString = dateString, !dateString.isEmpty else {
+            return "Not set"
+        }
+        
+        if let date = dateFormatter.date(from: dateString) {
+            return dateFormatter.string(from: date)
+        }
+        return dateString
+    }
+    
+    private func saveProfile() {
+        let updatedProfile: [String: Any] = [
+            "name": editedName,
+            "email": editedEmail,
+            "address": editedAddress,
+            "dateOfBirth": dateFormatter.string(from: editedDateOfBirth)
+        ]
+        
+        apiService.updateUserProfile(profile: updatedProfile) { result in
+            switch result {
+            case .success:
+                print("✅ Profile updated successfully")
+                viewModel.fetchProfile()
+            case .failure(let error):
+                print("❌ Failed to update profile: \(error.localizedDescription)")
+            }
+        }
     }
 }
 
@@ -176,12 +291,12 @@ struct StatView: View {
     var body: some View {
         ZStack {
             Circle()
-                .stroke(color, lineWidth: 4)
-                .frame(width: 60, height: 60)
+                .stroke(color, lineWidth: 8)
+                .frame(width: 80, height: 80)
             
             VStack {
                 Text(value)
-                    .font(.title3)
+                    .font(.title2)
                     .fontWeight(.bold)
                 Text(label)
                     .font(.caption)
@@ -193,12 +308,15 @@ struct StatView: View {
 
 struct ProfileField: View {
     let label: String
+    let value: String
     
     var body: some View {
         VStack(alignment: .leading) {
             Text(label)
                 .font(.caption)
                 .foregroundColor(.gray)
+            Text(value)
+                .font(.body)
             Rectangle()
                 .fill(Color.gray.opacity(0.2))
                 .frame(height: 1)

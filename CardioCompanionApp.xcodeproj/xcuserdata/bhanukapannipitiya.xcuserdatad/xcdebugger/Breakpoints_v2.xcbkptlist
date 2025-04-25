@@ -14,8 +14,10 @@
             filePath = "CardioCompanionApp/Services/APIService.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "936"
-            endingLineNumber = "936">
+            startingLineNumber = "930"
+            endingLineNumber = "930"
+            landmarkName = "fetchUserProfile(completion:)"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

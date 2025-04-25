@@ -11,5 +11,28 @@
 	</array>
 	<key>NSCalendarsUsageDescription</key>
 	<string>We need access to your calendar to add your medical appointments.</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>CardioCompanion needs access to read your health data to track your heart health progress over time.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>CardioCompanion needs access to save your vital readings (heart rate, blood pressure, and oxygen levels) to help you monitor your heart health.</string>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
+		<key>UISceneConfigurations</key>
+		<dict>
+			<key>UIWindowSceneSessionRoleApplication</key>
+			<array>
+				<dict>
+					<key>UISceneConfigurationName</key>
+					<string>Default Configuration</string>
+					<key>UISceneDelegateClassName</key>
+					<string>$(PRODUCT_MODULE_NAME).SceneDelegate</string>
+					<key>UISceneStoryboardFile</key>
+					<string>Main</string>
+				</dict>
+			</array>
+		</dict>
+	</dict>
 </dict>
 </plist>
