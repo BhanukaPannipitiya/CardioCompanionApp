@@ -80,6 +80,7 @@
 			membershipExceptions = (
 				CardioCompanionApp.xcdatamodeld,
 				Intents.intentdefinition,
+				"Launch Screen.storyboard",
 			);
 			target = A74D6F4F2DBBD14F00BD7370 /* CreateAppointmentIntent */;
 		};
@@ -88,6 +89,7 @@
 			membershipExceptions = (
 				CardioCompanionApp.xcdatamodeld,
 				Intents.intentdefinition,
+				"Launch Screen.storyboard",
 			);
 			target = A74D6F5B2DBBD15000BD7370 /* CreateAppointmentIntentUI */;
 		};

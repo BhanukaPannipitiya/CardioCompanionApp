@@ -110,18 +110,42 @@ struct SignUpView: View {
                                 let userID = appleIDCredential.user
                                 let fullName = appleIDCredential.fullName
                                 let email = appleIDCredential.email
-                                let name = "\(fullName?.givenName ?? "") \(fullName?.familyName ?? "")".trimmingCharacters(in: .whitespaces)
-
+                                
+                                // Create a name string, handling potential nil values
+                                var name = ""
+                                if let givenName = fullName?.givenName {
+                                    name += givenName
+                                }
+                                if let familyName = fullName?.familyName {
+                                    if !name.isEmpty {
+                                        name += " "
+                                    }
+                                    name += familyName
+                                }
+                                
+                                // If name is empty, use a default name
+                                if name.isEmpty {
+                                    name = "Apple User"
+                                }
+                                
+                                print("📱 Apple Sign In - UserID: \(userID)")
+                                print("📱 Apple Sign In - Name: \(name)")
+                                print("📱 Apple Sign In - Email: \(email ?? "No email provided")")
+                                
                                 if let identityTokenData = appleIDCredential.identityToken,
                                    let identityToken = String(data: identityTokenData, encoding: .utf8) {
-                                    let appleUser = AppleUser(name: name.isEmpty ? nil : name, email: email)
+                                    let appleUser = AppleUser(name: name, email: email)
                                     viewModel.signUpWithApple(identityToken: identityToken, user: appleUser)
                                 } else {
-                                    print("Failed to get Apple identity token")
+                                    print("❌ Failed to get Apple identity token")
+                                    viewModel.errorMessage = "Failed to get Apple identity token"
                                 }
+                            } else {
+                                print("❌ Failed to get Apple ID credential")
+                                viewModel.errorMessage = "Failed to get Apple ID credential"
                             }
                         case .failure(let error):
-                            print("Sign in with Apple failed: \(error.localizedDescription)")
+                            print("❌ Sign in with Apple failed: \(error.localizedDescription)")
                             viewModel.errorMessage = error.localizedDescription
                         }
                     }

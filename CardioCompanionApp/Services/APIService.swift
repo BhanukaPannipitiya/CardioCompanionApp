@@ -6,7 +6,7 @@ class APIService {
     // Use your computer's local IP address instead of localhost
     // You can find this by running 'ifconfig' in Terminal and looking for 'en0' or 'en1'
     // For example: "http://192.168.1.100:3000"
-    private let baseURL = "http://192.168.8.185:3000" // Replace with your actual IP address
+    private let baseURL = "https://cardio-companion-api.vercel.app"
     
     private var token: String? {
         didSet {

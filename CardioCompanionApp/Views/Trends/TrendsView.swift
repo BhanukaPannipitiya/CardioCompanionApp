@@ -12,6 +12,7 @@ struct TrendsView: View {
     @State private var symptomData: [SymptomOccurrence] = []
     @State private var isLoading = true
     @State private var selectedVitalType: VitalType = .heartRate
+    @State private var showHealthReport = false
     
     // Update color constants
     private let primaryColor = Color.blue
@@ -58,153 +59,12 @@ struct TrendsView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                // Title
-                Text("Health Trends")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                    .foregroundColor(.black)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal)
-                
-                // Time range selector
-                HStack {
-                    ForEach(TimeRange.allCases, id: \.self) { range in
-                        Button(action: { selectedTimeRange = range }) {
-                            Text(range.rawValue)
-                                .padding(.vertical, 8)
-                                .padding(.horizontal, 16)
-                                .background(selectedTimeRange == range ? primaryColor : Color.clear)
-                                .foregroundColor(selectedTimeRange == range ? .white : primaryColor)
-                                .cornerRadius(8)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .stroke(primaryColor, lineWidth: 1)
-                                )
-                        }
-                    }
-                    Spacer()
-                }
-                .padding(.horizontal)
-                
-                // Vital stats grid
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
-                    VitalStatCard(icon: "waveform.path.ecg",
-                                title: "Heart Rate",
-                                value: String(format: "%.0f", latestHeartRate),
-                                unit: "BPM",
-                                color: heartRateColor)
-                    
-                    VitalStatCard(icon: "lungs.fill",
-                                title: "Oxygen Level",
-                                value: String(format: "%.1f", latestOxygenLevel),
-                                unit: "%",
-                                color: oxygenColor)
-                    
-                    VitalStatCard(icon: "heart.fill",
-                                title: "Blood Pressure",
-                                value: latestBloodPressure,
-                                unit: "mmHg",
-                                color: bloodPressureColor)
-                    
-                    VitalStatCard(icon: "chart.bar.fill",
-                                title: "Health Score",
-                                value: String(healthScore),
-                                unit: "/100",
-                                color: healthScoreColor)
-                }
-                .padding(.horizontal)
-                
-                // Vital type selector
-                HStack {
-                    ForEach([VitalType.heartRate, .oxygenLevel, .bloodPressure], id: \.self) { type in
-                        Button(action: { selectedVitalType = type }) {
-                            Text(type.rawValue)
-                                .padding(.vertical, 6)
-                                .padding(.horizontal, 12)
-                                .background(selectedVitalType == type ? primaryColor : Color.clear)
-                                .foregroundColor(selectedVitalType == type ? .white : primaryColor)
-                                .cornerRadius(6)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 6)
-                                        .stroke(primaryColor, lineWidth: 1)
-                                )
-                        }
-                    }
-                    Spacer()
-                }
-                .padding(.horizontal)
-                
-                // Selected vital trend chart
-                VStack(alignment: .leading) {
-                    Text("\(selectedVitalType.rawValue) Trends")
-                        .font(.headline)
-                        .foregroundColor(.black)
-                        .padding(.horizontal)
-                    
-                    if isLoading {
-                        ProgressView()
-                            .frame(height: 200)
-                    } else {
-                        switch selectedVitalType {
-                        case .heartRate:
-                            TrendLineChart(data: heartRateData, color: heartRateColor)
-                        case .oxygenLevel:
-                            TrendLineChart(data: oxygenData, color: oxygenColor)
-                        case .bloodPressure:
-                            BloodPressureChart(data: bloodPressureData)
-                        }
-                    }
-                }
-                .padding()
-                .background(Color.white)
-                .cornerRadius(16)
-                .shadow(radius: 5)
-                .padding(.horizontal)
-                
-                // Symptom Occurrence
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Symptom Occurrence")
-                        .font(.headline)
-                        .foregroundColor(.black)
-                        .padding(.horizontal)
-                    
-                    if symptomData.isEmpty {
-                        Text("No symptoms reported")
-                            .foregroundColor(.gray)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                    } else {
-                        Chart {
-                            ForEach(symptomData) { symptom in
-                                BarMark(
-                                    x: .value("Symptom", symptom.name),
-                                    y: .value("Count", symptom.count)
-                                )
-                                .foregroundStyle(primaryColor)
-                            }
-                        }
-                        .frame(height: 200)
-                        .padding()
-                    }
-                }
-                .padding()
-                .background(Color.white)
-                .cornerRadius(16)
-                .shadow(radius: 5)
-                .padding(.horizontal)
-                
-                // Generate Report Button
-                Button(action: generateHealthReport) {
-                    Text("Generate Health Report")
-                        .fontWeight(.semibold)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(primaryColor)
-                        .cornerRadius(12)
-                        .shadow(radius: 3)
-                }
-                .padding(.horizontal)
+                headerSection
+                vitalStatsGrid
+                vitalTypeSelector
+                selectedVitalTrendChart
+                symptomOccurrenceSection
+                generateReportButton
             }
             .padding(.vertical)
         }
@@ -218,6 +78,185 @@ struct TrendsView: View {
                 await loadData()
             }
         }
+        .healthReportSheet(
+            isPresented: $showHealthReport,
+            healthData: prepareHealthReportData()
+        )
+    }
+    
+    private var headerSection: some View {
+        Text("Health Trends")
+            .font(.largeTitle)
+            .fontWeight(.bold)
+            .foregroundColor(.black)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal)
+    }
+    
+    private var vitalStatsGrid: some View {
+        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
+            VitalStatCard(
+                icon: "waveform.path.ecg",
+                title: "Heart Rate",
+                value: String(format: "%.0f", latestHeartRate),
+                unit: "BPM",
+                color: heartRateColor
+            )
+            
+            VitalStatCard(
+                icon: "lungs.fill",
+                title: "Oxygen Level",
+                value: String(format: "%.1f", latestOxygenLevel),
+                unit: "%",
+                color: oxygenColor
+            )
+            
+            VitalStatCard(
+                icon: "heart.fill",
+                title: "Blood Pressure",
+                value: latestBloodPressure,
+                unit: "mmHg",
+                color: bloodPressureColor
+            )
+            
+            VitalStatCard(
+                icon: "chart.bar.fill",
+                title: "Health Score",
+                value: String(healthScore),
+                unit: "/100",
+                color: healthScoreColor
+            )
+        }
+        .padding(.horizontal)
+    }
+    
+    private var vitalTypeSelector: some View {
+        HStack {
+            ForEach([VitalType.heartRate, .oxygenLevel, .bloodPressure], id: \.self) { type in
+                Button(action: { selectedVitalType = type }) {
+                    Text(type.rawValue)
+                        .padding(.vertical, 6)
+                        .padding(.horizontal, 12)
+                        .background(selectedVitalType == type ? primaryColor : Color.clear)
+                        .foregroundColor(selectedVitalType == type ? .white : primaryColor)
+                        .cornerRadius(6)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 6)
+                                .stroke(primaryColor, lineWidth: 1)
+                        )
+                }
+            }
+            Spacer()
+        }
+        .padding(.horizontal)
+    }
+    
+    private var selectedVitalTrendChart: some View {
+        VStack(alignment: .leading) {
+            Text("\(selectedVitalType.rawValue) Trends")
+                .font(.headline)
+                .foregroundColor(.black)
+                .padding(.horizontal)
+            
+            if isLoading {
+                ProgressView()
+                    .frame(height: 200)
+            } else {
+                switch selectedVitalType {
+                case .heartRate:
+                    TrendLineChart(data: heartRateData, color: heartRateColor)
+                case .oxygenLevel:
+                    TrendLineChart(data: oxygenData, color: oxygenColor)
+                case .bloodPressure:
+                    BloodPressureChart(data: bloodPressureData)
+                }
+            }
+        }
+        .padding()
+        .background(Color.white)
+        .cornerRadius(16)
+        .shadow(radius: 5)
+        .padding(.horizontal)
+    }
+    
+    private var symptomOccurrenceSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Symptom Occurrence")
+                .font(.headline)
+                .foregroundColor(.black)
+                .padding(.horizontal)
+            
+            if symptomData.isEmpty {
+                Text("No symptoms reported")
+                    .foregroundColor(.gray)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+            } else {
+                Chart {
+                    ForEach(symptomData) { symptom in
+                        BarMark(
+                            x: .value("Symptom", symptom.name),
+                            y: .value("Count", symptom.count)
+                        )
+                        .foregroundStyle(primaryColor)
+                    }
+                }
+                .frame(height: 200)
+                .padding()
+            }
+        }
+        .padding()
+        .background(Color.white)
+        .cornerRadius(16)
+        .shadow(radius: 5)
+        .padding(.horizontal)
+    }
+    
+    private var generateReportButton: some View {
+        Button(action: generateHealthReport) {
+            Text("Generate Health Report")
+                .fontWeight(.semibold)
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(primaryColor)
+                .cornerRadius(12)
+                .shadow(radius: 3)
+        }
+        .padding(.horizontal)
+    }
+    
+    private func prepareHealthReportData() -> HealthReportData {
+        let calendar = Calendar.current
+        let now = Date()
+        let startDate: Date
+        let endDate = now
+        
+        switch selectedTimeRange {
+        case .week:
+            startDate = calendar.date(byAdding: .day, value: -7, to: now) ?? now
+        case .month:
+            startDate = calendar.date(byAdding: .month, value: -1, to: now) ?? now
+        }
+        
+        let previousPeriodScore = 75 // This should be calculated from historical data
+        let improvement = Int(((Double(healthScore) - Double(previousPeriodScore)) / Double(previousPeriodScore)) * 100)
+        
+        return HealthReportData(
+            healthScore: healthScore,
+            currentStreak: vitalsManager.dailyStreak,
+            improvement: improvement,
+            heartRate: latestHeartRate,
+            oxygenLevel: latestOxygenLevel,
+            bloodPressure: latestBloodPressure,
+            symptomData: symptomData,
+            startDate: startDate,
+            endDate: endDate
+        )
+    }
+    
+    private func generateHealthReport() {
+        showHealthReport = true
     }
     
     private func loadData() async {
@@ -270,10 +309,6 @@ struct TrendsView: View {
         } catch {
             print("Error loading symptom data: \(error)")
         }
-    }
-    
-    private func generateHealthReport() {
-        // Implement health report generation
     }
 }
 
@@ -365,4 +400,36 @@ struct SymptomOccurrence: Identifiable {
     let id = UUID()
     let name: String
     let count: Int
+}
+
+// Add this struct to hold the health report data
+struct HealthReportData {
+    let healthScore: Int
+    let currentStreak: Int
+    let improvement: Int
+    let heartRate: Double
+    let oxygenLevel: Double
+    let bloodPressure: String
+    let symptomData: [SymptomOccurrence]
+    let startDate: Date
+    let endDate: Date
+}
+
+// Update the View extension
+extension View {
+    func healthReportSheet(isPresented: Binding<Bool>, healthData: HealthReportData) -> some View {
+        self.sheet(isPresented: isPresented) {
+            HealthReportView(
+                healthScore: healthData.healthScore,
+                currentStreak: healthData.currentStreak,
+                improvement: healthData.improvement,
+                heartRate: healthData.heartRate,
+                oxygenLevel: healthData.oxygenLevel,
+                bloodPressure: healthData.bloodPressure,
+                symptomData: healthData.symptomData,
+                startDate: healthData.startDate,
+                endDate: healthData.endDate
+            )
+        }
+    }
 } 

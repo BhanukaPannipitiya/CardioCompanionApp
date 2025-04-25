@@ -42,15 +42,19 @@ class SignUpViewModel: ObservableObject {
     }
 
     func signUpWithApple(identityToken: String, user: AppleUser?) {
+        print("📱 Starting Apple sign-up process")
+        print("📱 Identity Token: \(identityToken)")
+        print("📱 User Data: \(user?.toDictionary() ?? [:])")
+        
         APIService.shared.registerWithApple(identityToken: identityToken, user: user) { [weak self] result in
             DispatchQueue.main.async {
                 switch result {
                 case .success(let user):
-                    print("Apple sign-up successful for user: \(user.email)")
+                    print("✅ Apple sign-up successful for user: \(user.email)")
                     self?.isAuthenticated = true
                     self?.errorMessage = nil
                 case .failure(let error):
-                    print("Apple sign-up failed: \(error.localizedDescription)")
+                    print("❌ Apple sign-up failed: \(error.localizedDescription)")
                     self?.errorMessage = error.localizedDescription
                     self?.isAuthenticated = false
                 }
