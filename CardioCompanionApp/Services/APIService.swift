@@ -1,18 +1,21 @@
-// CardioCompanionApp/Services/APIService.swift
 import Foundation
 
 class APIService {
     static let shared = APIService()
-    private let baseURL = "http://localhost:3000"
+    
+    // Use your computer's local IP address instead of localhost
+    // You can find this by running 'ifconfig' in Terminal and looking for 'en0' or 'en1'
+    // For example: "http://192.168.1.100:3000"
+    private let baseURL = "http://192.168.8.185:3000" // Replace with your actual IP address
+    
     private var token: String? {
         didSet {
             if let token = token {
-                print("Token updated, saving to Keychain")
+                print("🔑 Token updated, saving to Keychain: \(token)")
                 _ = KeychainService.shared.saveToken(token)
             } else {
-                print("Token cleared, removing from Keychain")
+                print("🔑 Token cleared, removing from Keychain")
                 KeychainService.shared.deleteToken()
-                // Also clear userId when token is cleared
                 KeychainService.shared.deleteUserId()
                 AuthManager.shared.logout()
             }
@@ -20,23 +23,22 @@ class APIService {
     }
 
     private init() {
-        // Load token from Keychain on init
         if let savedToken = KeychainService.shared.getToken() {
-            print("Loaded token from Keychain")
+            print("🔑 Loaded token from Keychain: \(savedToken)")
             self.token = savedToken
-            // Also load userId from Keychain
             if let savedUserId = KeychainService.shared.getUserId() {
-                print("Loaded userId from Keychain: \(savedUserId)")
+                print("👤 Loaded userId from Keychain: \(savedUserId)")
                 AuthManager.shared.currentUserId = savedUserId
                 AuthManager.shared.isAuthenticated = true
             }
         } else {
-            print("No token found in Keychain")
+            print("🔑 No token found in Keychain")
         }
     }
 
     private func refreshToken(completion: @escaping (Bool) -> Void) {
         guard let refreshToken = KeychainService.shared.getRefreshToken() else {
+            print("❌ No refresh token available")
             completion(false)
             return
         }
@@ -47,27 +49,455 @@ class APIService {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("Bearer \(refreshToken)", forHTTPHeaderField: "Authorization")
         
+        print("🚀 Sending refresh token request to: \(url)")
+        print("📝 Request headers: \(request.allHTTPHeaderFields ?? [:])")
+        
         URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
-            if let httpResponse = response as? HTTPURLResponse,
-               httpResponse.statusCode == 200,
-               let data = data,
-               let response = try? JSONDecoder().decode(TokenResponse.self, from: data) {
-                self?.token = response.token
-                KeychainService.shared.saveRefreshToken(response.refreshToken)
-                completion(true)
-            } else {
+            if let error = error {
+                print("❌ Refresh token network error: \(error.localizedDescription)")
                 completion(false)
+                return
+            }
+            
+            if let httpResponse = response as? HTTPURLResponse {
+                print("📥 Refresh token response status: \(httpResponse.statusCode)")
+                if let data = data, let responseString = String(data: data, encoding: .utf8) {
+                    print("📥 Raw refresh token response: \(responseString)")
+                }
+                
+                if httpResponse.statusCode == 200, let data = data,
+                   let response = try? JSONDecoder().decode(TokenResponse.self, from: data) {
+                    print("✅ Refresh token successful, new token: \(response.token)")
+                    self?.token = response.token
+                    KeychainService.shared.saveRefreshToken(response.refreshToken)
+                    completion(true)
+                } else {
+                    print("❌ Refresh token failed with status: \(httpResponse.statusCode)")
+                    completion(false)
+                }
             }
         }.resume()
     }
 
     private func handleUnauthorizedError(completion: @escaping (Bool) -> Void) {
+        print("⚠️ Handling unauthorized error, attempting token refresh")
         refreshToken { success in
             if !success {
+                print("❌ Token refresh failed, clearing token")
                 self.token = nil
+            } else {
+                print("✅ Token refresh succeeded")
             }
             completion(success)
         }
+    }
+
+    func addMedication(_ medication: Medication, completion: @escaping (Result<Medication, Error>) -> Void) {
+        guard let url = URL(string: "\(baseURL)/api/medications") else {
+            let error = NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])
+            print("❌ Invalid URL: \(baseURL)/api/medications")
+            completion(.failure(error))
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        if let token = token {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            print("🔑 Using token: \(token)")
+        } else {
+            let error = NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "No authentication token"])
+            print("❌ No authentication token available")
+            completion(.failure(error))
+            return
+        }
+        
+        do {
+            let encoder = JSONEncoder()
+            encoder.dateEncodingStrategy = .iso8601
+            let requestBody = try encoder.encode(medication)
+            request.httpBody = requestBody
+            if let jsonString = String(data: requestBody, encoding: .utf8) {
+                print("📤 Request body: \(jsonString)")
+            } else {
+                print("⚠️ Could not convert request body to string for logging")
+            }
+        } catch {
+            print("❌ Failed to encode medication: \(error.localizedDescription)")
+            completion(.failure(error))
+            return
+        }
+        
+        print("🚀 Sending add medication request to: \(url)")
+        print("📝 Request headers: \(request.allHTTPHeaderFields ?? [:])")
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("❌ Network error: \(error.localizedDescription)")
+                completion(.failure(error))
+                return
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                let error = NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "No HTTP response received"])
+                print("❌ No HTTP response received")
+                completion(.failure(error))
+                return
+            }
+            
+            print("📥 Response status: \(httpResponse.statusCode)")
+            print("📥 Response headers: \(httpResponse.allHeaderFields)")
+            
+            guard let data = data else {
+                let error = NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "No data received"])
+                print("❌ No data received from server")
+                completion(.failure(error))
+                return
+            }
+            
+            if let responseString = String(data: data, encoding: .utf8) {
+                print("📥 Raw response data: \(responseString)")
+            } else {
+                print("⚠️ Could not convert response data to string for logging")
+            }
+            
+            do {
+                let decoder = JSONDecoder()
+                let dateFormatter = ISO8601DateFormatter()
+                dateFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+                decoder.dateDecodingStrategy = .custom { decoder in
+                    let container = try decoder.singleValueContainer()
+                    let dateString = try container.decode(String.self)
+                    
+                    if let date = dateFormatter.date(from: dateString) {
+                        return date
+                    }
+                    
+                    // Try alternative format without fractional seconds
+                    dateFormatter.formatOptions = [.withInternetDateTime]
+                    if let date = dateFormatter.date(from: dateString) {
+                        return date
+                    }
+                    
+                    throw DecodingError.dataCorruptedError(in: container, debugDescription: "Cannot decode date string \(dateString)")
+                }
+                let addedMedication = try decoder.decode(Medication.self, from: data)
+                print("✅ Successfully decoded medication: \(addedMedication)")
+                completion(.success(addedMedication))
+            } catch {
+                print("❌ Decoding error: \(error.localizedDescription)")
+                if let decodingError = error as? DecodingError {
+                    switch decodingError {
+                    case .dataCorrupted(let context):
+                        print("❌ Data corrupted: \(context.debugDescription)")
+                    case .keyNotFound(let key, let context):
+                        print("❌ Key '\(key)' not found: \(context.debugDescription)")
+                    case .typeMismatch(let type, let context):
+                        print("❌ Type mismatch for \(type): \(context.debugDescription)")
+                    case .valueNotFound(let type, let context):
+                        print("❌ Value not found for \(type): \(context.debugDescription)")
+                    @unknown default:
+                        print("❌ Unknown decoding error")
+                    }
+                }
+                completion(.failure(error))
+            }
+        }.resume()
+    }
+
+    func fetchMedications(completion: @escaping (Result<[Medication], Error>) -> Void) {
+        guard let url = URL(string: "\(baseURL)/api/medications") else {
+            let error = NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])
+            print("❌ Invalid URL: \(baseURL)/api/medications")
+            completion(.failure(error))
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        if let token = token {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            print("🔑 Using token: \(token)")
+        } else {
+            let error = NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "No authentication token"])
+            print("❌ No authentication token available")
+            completion(.failure(error))
+            return
+        }
+        
+        print("🚀 Sending fetch medications request to: \(url)")
+        print("📝 Request headers: \(request.allHTTPHeaderFields ?? [:])")
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("❌ Network error: \(error.localizedDescription)")
+                completion(.failure(error))
+                return
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                let error = NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "No HTTP response received"])
+                print("❌ No HTTP response received")
+                completion(.failure(error))
+                return
+            }
+            
+            print("📥 Response status: \(httpResponse.statusCode)")
+            print("📥 Response headers: \(httpResponse.allHeaderFields)")
+            
+            guard let data = data else {
+                let error = NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "No data received"])
+                print("❌ No data received from server")
+                completion(.failure(error))
+                return
+            }
+            
+            if let responseString = String(data: data, encoding: .utf8) {
+                print("📥 Raw response data: \(responseString)")
+            } else {
+                print("⚠️ Could not convert response data to string for logging")
+            }
+            
+            do {
+                let decoder = JSONDecoder()
+                let dateFormatter = ISO8601DateFormatter()
+                dateFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+                decoder.dateDecodingStrategy = .custom { decoder in
+                    let container = try decoder.singleValueContainer()
+                    let dateString = try container.decode(String.self)
+                    
+                    if let date = dateFormatter.date(from: dateString) {
+                        return date
+                    }
+                    
+                    // Try alternative format without fractional seconds
+                    dateFormatter.formatOptions = [.withInternetDateTime]
+                    if let date = dateFormatter.date(from: dateString) {
+                        return date
+                    }
+                    
+                    throw DecodingError.dataCorruptedError(in: container, debugDescription: "Cannot decode date string \(dateString)")
+                }
+                let medications = try decoder.decode([Medication].self, from: data)
+                print("✅ Successfully decoded \(medications.count) medications")
+                completion(.success(medications))
+            } catch {
+                print("❌ Decoding error: \(error.localizedDescription)")
+                if let decodingError = error as? DecodingError {
+                    switch decodingError {
+                    case .dataCorrupted(let context):
+                        print("❌ Data corrupted: \(context.debugDescription)")
+                    case .keyNotFound(let key, let context):
+                        print("❌ Key '\(key)' not found: \(context.debugDescription)")
+                    case .typeMismatch(let type, let context):
+                        print("❌ Type mismatch for \(type): \(context.debugDescription)")
+                    case .valueNotFound(let type, let context):
+                        print("❌ Value not found for \(type): \(context.debugDescription)")
+                    @unknown default:
+                        print("❌ Unknown decoding error")
+                    }
+                }
+                completion(.failure(error))
+            }
+        }.resume()
+    }
+
+    func deleteMedication(id: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        guard let url = URL(string: "\(baseURL)/api/medications/\(id)") else {
+            let error = NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])
+            print("❌ Invalid URL: \(baseURL)/api/medications/\(id)")
+            completion(.failure(error))
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        
+        if let token = token {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            print("🔑 Using token: \(token)")
+        } else {
+            let error = NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "No authentication token"])
+            print("❌ No authentication token available")
+            completion(.failure(error))
+            return
+        }
+        
+        print("🚀 Sending delete medication request to: \(url)")
+        print("📝 Request headers: \(request.allHTTPHeaderFields ?? [:])")
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("❌ Network error: \(error.localizedDescription)")
+                completion(.failure(error))
+                return
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                let error = NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "No HTTP response received"])
+                print("❌ No HTTP response received")
+                completion(.failure(error))
+                return
+            }
+            
+            print("📥 Response status: \(httpResponse.statusCode)")
+            print("📥 Response headers: \(httpResponse.allHeaderFields)")
+            
+            if let data = data, let responseString = String(data: data, encoding: .utf8) {
+                print("📥 Raw response data: \(responseString)")
+                
+                // Try to decode error message from server
+                if httpResponse.statusCode >= 400 {
+                    do {
+                        if let errorDict = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+                           let errorMessage = errorDict["message"] as? String {
+                            let error = NSError(domain: "", code: httpResponse.statusCode, 
+                                              userInfo: [NSLocalizedDescriptionKey: "Server error: \(errorMessage)"])
+                            print("❌ Server error: \(errorMessage)")
+                            completion(.failure(error))
+                            return
+                        }
+                    } catch {
+                        print("⚠️ Could not decode error message from server")
+                    }
+                }
+            } else {
+                print("⚠️ No response data or could not convert to string")
+            }
+            
+            if httpResponse.statusCode == 204 {
+                print("✅ Successfully deleted medication with id: \(id)")
+                completion(.success(()))
+            } else {
+                let errorMessage = "Failed to delete medication. Status: \(httpResponse.statusCode)"
+                let error = NSError(domain: "", code: httpResponse.statusCode, 
+                                  userInfo: [NSLocalizedDescriptionKey: errorMessage])
+                print("❌ \(errorMessage)")
+                completion(.failure(error))
+            }
+        }.resume()
+    }
+
+    func toggleMedicationTaken(id: String, scheduleTime: Date, isTaken: Bool, completion: @escaping (Result<Medication, Error>) -> Void) {
+        guard let url = URL(string: "\(baseURL)/api/medications/\(id)/toggle-taken") else {
+            let error = NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])
+            print("❌ Invalid URL: \(baseURL)/api/medications/\(id)/toggle-taken")
+            completion(.failure(error))
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "PATCH"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        if let token = token {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            print("🔑 Using token: \(token)")
+        } else {
+            let error = NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "No authentication token"])
+            print("❌ No authentication token available")
+            completion(.failure(error))
+            return
+        }
+        
+        let body: [String: Any] = [
+            "scheduleTime": ISO8601DateFormatter().string(from: scheduleTime),
+            "isTaken": isTaken
+        ]
+        
+        do {
+            let requestBody = try JSONSerialization.data(withJSONObject: body)
+            request.httpBody = requestBody
+            if let jsonString = String(data: requestBody, encoding: .utf8) {
+                print("📤 Request body: \(jsonString)")
+            } else {
+                print("⚠️ Could not convert request body to string for logging")
+            }
+        } catch {
+            print("❌ Failed to encode request body: \(error.localizedDescription)")
+            completion(.failure(error))
+            return
+        }
+        
+        print("🚀 Sending toggle medication taken request to: \(url)")
+        print("📝 Request headers: \(request.allHTTPHeaderFields ?? [:])")
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("❌ Network error: \(error.localizedDescription)")
+                completion(.failure(error))
+                return
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                let error = NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "No HTTP response received"])
+                print("❌ No HTTP response received")
+                completion(.failure(error))
+                return
+            }
+            
+            print("📥 Response status: \(httpResponse.statusCode)")
+            print("📥 Response headers: \(httpResponse.allHeaderFields)")
+            
+            guard let data = data else {
+                let error = NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "No data received"])
+                print("❌ No data received from server")
+                completion(.failure(error))
+                return
+            }
+            
+            if let responseString = String(data: data, encoding: .utf8) {
+                print("📥 Raw response data: \(responseString)")
+            } else {
+                print("⚠️ Could not convert response data to string for logging")
+            }
+            
+            do {
+                let decoder = JSONDecoder()
+                let dateFormatter = ISO8601DateFormatter()
+                dateFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+                decoder.dateDecodingStrategy = .custom { decoder in
+                    let container = try decoder.singleValueContainer()
+                    let dateString = try container.decode(String.self)
+                    
+                    if let date = dateFormatter.date(from: dateString) {
+                        return date
+                    }
+                    
+                    // Try alternative format without fractional seconds
+                    dateFormatter.formatOptions = [.withInternetDateTime]
+                    if let date = dateFormatter.date(from: dateString) {
+                        return date
+                    }
+                    
+                    throw DecodingError.dataCorruptedError(in: container, debugDescription: "Cannot decode date string \(dateString)")
+                }
+                let updatedMedication = try decoder.decode(Medication.self, from: data)
+                print("✅ Successfully decoded updated medication: \(updatedMedication)")
+                completion(.success(updatedMedication))
+            } catch {
+                print("❌ Decoding error: \(error.localizedDescription)")
+                if let decodingError = error as? DecodingError {
+                    switch decodingError {
+                    case .dataCorrupted(let context):
+                        print("❌ Data corrupted: \(context.debugDescription)")
+                    case .keyNotFound(let key, let context):
+                        print("❌ Key '\(key)' not found: \(context.debugDescription)")
+                    case .typeMismatch(let type, let context):
+                        print("❌ Type mismatch for \(type): \(context.debugDescription)")
+                    case .valueNotFound(let type, let context):
+                        print("❌ Value not found for \(type): \(context.debugDescription)")
+                    @unknown default:
+                        print("❌ Unknown decoding error")
+                    }
+                }
+                completion(.failure(error))
+            }
+        }.resume()
     }
 
     func login(email: String, password: String, completion: @escaping (Result<User, Error>) -> Void) {
@@ -98,15 +528,13 @@ class APIService {
 
             do {
                 let user = try JSONDecoder().decode(User.self, from: data)
-                print("Login successful, saving token and userId")
+                print("✅ Login successful, saving token and userId")
                 self?.token = user.token
-                // Save userId to Keychain
                 _ = KeychainService.shared.saveUserId(user.id)
                 AuthManager.shared.login(user: user)
                 completion(.success(user))
             } catch {
                 print("❌ Decoding error: \(error)")
-                print("Expected User struct: id (String), email (String), name (String), subscriptionStatus (String), token (String)")
                 completion(.failure(error))
             }
         }.resume()
@@ -140,9 +568,8 @@ class APIService {
 
             do {
                 let user = try JSONDecoder().decode(User.self, from: data)
-                print("Registration successful, saving token and userId")
+                print("✅ Registration successful, saving token and userId")
                 self?.token = user.token
-                // Save userId to Keychain
                 _ = KeychainService.shared.saveUserId(user.id)
                 AuthManager.shared.login(user: user)
                 completion(.success(user))
@@ -183,9 +610,8 @@ class APIService {
 
             do {
                 let user = try JSONDecoder().decode(User.self, from: data)
-                print("Apple registration successful, saving token and userId")
+                print("✅ Apple registration successful, saving token and userId")
                 self?.token = user.token
-                // Save userId to Keychain
                 _ = KeychainService.shared.saveUserId(user.id)
                 AuthManager.shared.login(user: user)
                 completion(.success(user))
@@ -201,56 +627,30 @@ class APIService {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
-        print("🚀 Sending password reset request to: \(url)")
-        print("📩 Request headers: \(request.allHTTPHeaderFields ?? [:])")
-
         let body: [String: String] = ["email": email]
         do {
             request.httpBody = try JSONEncoder().encode(body)
-            if let jsonString = String(data: request.httpBody!, encoding: .utf8) {
-                print("📤 Request body: \(jsonString)")
-            }
         } catch {
-            print("❌ Failed to encode request body: \(error)")
             completion(.failure(error))
             return
         }
 
         URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
-                print("❌ Network error: \(error.localizedDescription)")
                 completion(.failure(error))
                 return
             }
 
-            if let httpResponse = response as? HTTPURLResponse {
-                print("📥 HTTP Response Status: \(httpResponse.statusCode)")
-                print("📥 Response headers: \(httpResponse.allHeaderFields)")
-            }
-
             guard let data = data else {
                 let noDataError = NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "No data received"])
-                print("❌ No data received from server")
                 completion(.failure(noDataError))
                 return
             }
 
-            if let responseString = String(data: data, encoding: .utf8) {
-                print("📥 Raw response data: \(responseString)")
-            }
-
             do {
-                // Try to decode as a dictionary first to see what we're getting
-                if let jsonResponse = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-                    print("📥 Decoded JSON response: \(jsonResponse)")
-                }
-                
                 let response = try JSONDecoder().decode(OTPResponse.self, from: data)
-                print("✅ Successfully decoded OTP response: \(response)")
                 completion(.success(response))
             } catch {
-                print("❌ Decoding error: \(error)")
-                print("❌ Error description: \(error.localizedDescription)")
                 completion(.failure(error))
             }
         }.resume()
@@ -277,25 +677,14 @@ class APIService {
 
         URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
-                print("❌ Network error: \(error.localizedDescription)")
                 completion(.failure(error))
                 return
             }
 
-            if let httpResponse = response as? HTTPURLResponse {
-                print("📥 HTTP Response Status: \(httpResponse.statusCode)")
-                print("📥 Response headers: \(httpResponse.allHeaderFields)")
-            }
-
             guard let data = data else {
                 let noDataError = NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "No data received"])
-                print("❌ No data received from server")
                 completion(.failure(noDataError))
                 return
-            }
-
-            if let responseString = String(data: data, encoding: .utf8) {
-                print("📥 Raw response data: \(responseString)")
             }
 
             do {
@@ -327,25 +716,14 @@ class APIService {
 
         URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
-                print("❌ Network error: \(error.localizedDescription)")
                 completion(.failure(error))
                 return
             }
 
-            if let httpResponse = response as? HTTPURLResponse {
-                print("📥 HTTP Response Status: \(httpResponse.statusCode)")
-                print("📥 Response headers: \(httpResponse.allHeaderFields)")
-            }
-
             guard let data = data else {
                 let noDataError = NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "No data received"])
-                print("❌ No data received from server")
                 completion(.failure(noDataError))
                 return
-            }
-
-            if let responseString = String(data: data, encoding: .utf8) {
-                print("📥 Raw response data: \(responseString)")
             }
 
             do {
@@ -364,93 +742,43 @@ class APIService {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
         guard let token = token else {
-            print("❌ No token available for symptom save")
             let error = NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "No authentication token available"])
             completion(.failure(error))
             return
-        }
-        
-        // Debug information
-        print("🔑 Current token: \(token)")
-        if let userId = AuthManager.shared.currentUserId {
-            print("👤 Current userId: \(userId)")
-        } else {
-            print("⚠️ No userId found in AuthManager")
-        }
-        if let refreshToken = KeychainService.shared.getRefreshToken() {
-            print("🔄 Refresh token available")
-        } else {
-            print("⚠️ No refresh token available")
         }
         
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         
         do {
             request.httpBody = try JSONEncoder().encode(symptomLog)
-            if let jsonString = String(data: request.httpBody!, encoding: .utf8) {
-                print("📤 Request body: \(jsonString)")
-            }
         } catch {
-            print("❌ Failed to encode symptom log: \(error)")
             completion(.failure(error))
             return
         }
         
-        print("🚀 Sending symptom save request to: \(url)")
-        print("📝 Request headers: \(request.allHTTPHeaderFields ?? [:])")
-        
         URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
             if let error = error {
-                print("❌ Network error: \(error.localizedDescription)")
                 completion(.failure(error))
                 return
             }
             
             if let httpResponse = response as? HTTPURLResponse {
-                print("📥 HTTP Response Status: \(httpResponse.statusCode)")
-                print("📥 Response headers: \(httpResponse.allHeaderFields)")
-                
                 switch httpResponse.statusCode {
                 case 200...299:
-                    print("✅ Symptom saved successfully")
                     completion(.success(()))
                 case 401:
-                    print("⚠️ Unauthorized (401) response received")
-                    print("🔍 Checking refresh token availability...")
-                    
-                    if let refreshToken = KeychainService.shared.getRefreshToken() {
-                        print("🔄 Attempting token refresh...")
-                        self?.handleUnauthorizedError { success in
-                            if success {
-                                print("✅ Token refresh successful, retrying request")
-                                self?.saveSymptomLog(symptomLog: symptomLog, completion: completion)
-                            } else {
-                                print("❌ Token refresh failed")
-                                let error = NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "Authentication failed"])
-                                completion(.failure(error))
-                            }
+                    self?.handleUnauthorizedError { success in
+                        if success {
+                            self?.saveSymptomLog(symptomLog: symptomLog, completion: completion)
+                        } else {
+                            let error = NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "Authentication failed"])
+                            completion(.failure(error))
                         }
-                    } else {
-                        print("❌ No refresh token available")
-                        let error = NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "Authentication failed"])
-                        completion(.failure(error))
                     }
                 default:
-                    if let data = data,
-                       let errorResponse = try? JSONDecoder().decode(ErrorResponse.self, from: data) {
-                        print("❌ Server error: \(errorResponse.message)")
-                        let error = NSError(domain: "", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: errorResponse.message])
-                        completion(.failure(error))
-                    } else {
-                        print("❌ Unknown error occurred")
-                        let error = NSError(domain: "", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "Unknown error occurred"])
-                        completion(.failure(error))
-                    }
+                    let error = NSError(domain: "", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "Server error occurred"])
+                    completion(.failure(error))
                 }
-            }
-            
-            if let data = data, let responseString = String(data: data, encoding: .utf8) {
-                print("📥 Raw response data: \(responseString)")
             }
         }.resume()
     }
@@ -464,7 +792,6 @@ class APIService {
     func fetchSymptomLogs(startDate: Date? = nil, endDate: Date? = nil, completion: @escaping (Result<[SymptomLog], Error>) -> Void) {
         var urlComponents = URLComponents(string: "\(baseURL)/api/symptoms")!
         
-        // Add date range query parameters if provided
         if let startDate = startDate, let endDate = endDate {
             let dateFormatter = ISO8601DateFormatter()
             urlComponents.queryItems = [
@@ -475,7 +802,6 @@ class APIService {
         
         guard let url = urlComponents.url else {
             let error = NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])
-            print("❌ Invalid URL: \(urlComponents.string ?? "")")
             completion(.failure(error))
             return
         }
@@ -485,65 +811,37 @@ class APIService {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
         guard let token = token else {
-            print("❌ No token available for symptom fetch")
             let error = NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "No authentication token available"])
             completion(.failure(error))
             return
         }
         
-        // Debug information
-        print("🔑 Current token: \(token)")
-        if let userId = AuthManager.shared.currentUserId {
-            print("👤 Current userId: \(userId)")
-        } else {
-            print("⚠️ No userId found in AuthManager")
-        }
-        if let refreshToken = KeychainService.shared.getRefreshToken() {
-            print("🔄 Refresh token available")
-        } else {
-            print("⚠️ No refresh token available")
-        }
-        
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        print("🚀 Fetching symptom logs from: \(url)")
-        print("📝 Request headers: \(request.allHTTPHeaderFields ?? [:])")
         
         URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
             if let error = error {
-                print("❌ Network error: \(error.localizedDescription)")
                 completion(.failure(error))
                 return
             }
             
             if let httpResponse = response as? HTTPURLResponse {
-                print("📥 HTTP Response Status: \(httpResponse.statusCode)")
-                
                 switch httpResponse.statusCode {
                 case 200...299:
                     guard let data = data else {
-                        print("❌ No data received from server")
-                        let error = NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "No data received from server"])
+                        let error = NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "No data received"])
                         completion(.failure(error))
                         return
                     }
-                    
                     do {
                         let symptomLogs = try JSONDecoder().decode([SymptomLog].self, from: data)
-                        print("✅ Successfully decoded \(symptomLogs.count) symptom logs")
                         completion(.success(symptomLogs))
                     } catch {
-                        print("❌ Decoding error: \(error)")
-                        if let jsonString = String(data: data, encoding: .utf8) {
-                            print("📥 Raw response: \(jsonString)")
-                        }
                         completion(.failure(error))
                     }
                 case 401:
-                    print("❌ Unauthorized - Token may be invalid or expired")
-                    let error = NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "Authentication failed. Please log in again."])
+                    let error = NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "Authentication failed"])
                     completion(.failure(error))
                 default:
-                    print("❌ Server error: \(httpResponse.statusCode)")
                     let error = NSError(domain: "", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "Server error occurred"])
                     completion(.failure(error))
                 }
@@ -551,9 +849,3 @@ class APIService {
         }.resume()
     }
 }
-
-
-
-
-
-

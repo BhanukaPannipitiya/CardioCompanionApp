@@ -12,10 +12,6 @@ struct VitalReading {
     var bloodPressure: String
 }
 
-struct Medication {
-    var nextDose: Date
-}
-
 struct Appointment {
     var date: Date
 }

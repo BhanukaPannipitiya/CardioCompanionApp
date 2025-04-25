@@ -1,37 +1,97 @@
 import SwiftUI
 
 struct MedicationView: View {
-    let nextDoseTime: Date
+    @StateObject private var viewModel = DashboardViewModel()
+    @Environment(\.scenePhase) private var scenePhase
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Medications")
                 .font(.headline)
             
-            HStack {
-                Image(systemName: "pills.fill")
-                    .font(.title2)
-                    .foregroundColor(.green)
-                
-                VStack(alignment: .leading) {
-                    Text("Next dose")
-                        .font(.subheadline)
-                    Text("at \(nextDoseTime, formatter: timeFormatter)")
-                        .font(.headline)
-                        .foregroundColor(.red)
+            VStack(alignment: .leading) {
+                if viewModel.isLoading {
+                    ProgressView()
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding()
+                } else if let errorMessage = viewModel.errorMessage {
+                    VStack {
+                        Text(errorMessage)
+                            .foregroundColor(.red)
+                            .font(.subheadline)
+                        Button("Retry") {
+                            viewModel.refresh()
+                        }
+                        .font(.caption)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding()
+                } else if let nextMedication = viewModel.nextMedication,
+                          let nextTime = viewModel.nextMedicationTime {
+                    HStack(alignment: .top) {
+                        Image(systemName: "pills.fill")
+                            .font(.title2)
+                            .foregroundColor(.green)
+                            .padding(.top, 2)
+                        
+                        VStack(alignment: .leading) {
+                            Text("Next dose")
+                                .font(.subheadline)
+                            Text("\(nextMedication.name)")
+                                .font(.headline)
+                            Text("at \(nextTime, formatter: timeFormatter)")
+                                .font(.subheadline)
+                                .foregroundColor(.red)
+                        }
+                        
+                        Spacer()
+                    }
+                    
+                    HStack {
+                        Spacer()
+                        NavigationLink(destination: MedicationListView()) {
+                            Text("View all")
+                                .font(.caption)
+                        }
+                    }
+                    .padding(.top, 4)
+                    
+                } else {
+                    HStack(alignment: .top) {
+                        Image(systemName: "pills.fill")
+                            .font(.title2)
+                            .foregroundColor(.green)
+                            .padding(.top, 2)
+                        
+                        VStack(alignment: .leading) {
+                            Text("No upcoming medications")
+                                .font(.subheadline)
+                        }
+                        
+                        Spacer()
+                    }
+                    
+                    HStack {
+                        Spacer()
+                        NavigationLink(destination: MedicationListView()) {
+                            Text("View all")
+                                .font(.caption)
+                        }
+                    }
+                    .padding(.top, 4)
                 }
-                
-                Spacer()
-                
-                Button("View all") {
-                    // Action
-                }
-                .font(.caption)
-                .foregroundColor(.blue)
             }
             .padding()
             .background(Color(.systemBackground))
             .cornerRadius(12)
+        }
+        .onAppear {
+            viewModel.refresh()
+        }
+        .onChange(of: scenePhase) { newPhase in
+            if newPhase == .active {
+                viewModel.refresh()
+            }
         }
     }
     
@@ -63,17 +123,12 @@ struct AppointmentView: View {
                 }
                 
                 Spacer()
-                
-                Button("View all") {
-                    // Action
-                }
-                .font(.caption)
-                .foregroundColor(.blue)
             }
             .padding()
             .background(Color(.systemBackground))
             .cornerRadius(12)
         }
+        .contentShape(Rectangle())
     }
     
     private var dayFormatter: DateFormatter {
@@ -90,13 +145,15 @@ struct AppointmentView: View {
 }
 
 struct MedicationAppointmentRow: View {
-    let nextDoseTime: Date
     let nextAppointment: Date
     
     var body: some View {
         HStack(spacing: 16) {
-            MedicationView(nextDoseTime: nextDoseTime)
-            AppointmentView(nextAppointment: nextAppointment)
+            MedicationView()
+            NavigationLink(destination: AppointmentsListView()) {
+                AppointmentView(nextAppointment: nextAppointment)
+            }
+            .buttonStyle(PlainButtonStyle())
         }
         .padding(.horizontal)
     }
