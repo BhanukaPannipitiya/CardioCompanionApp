@@ -29,7 +29,7 @@ struct MainTabView: View {
                 }
                 .tag(2)
             
-            LogVitalsView()
+            LogVitalsView(selectedTab: $selectedTab)
                 .tabItem {
                     Image(systemName: "heart.fill")
                     Text("Log Vitals")
@@ -47,7 +47,7 @@ struct MainTabView: View {
             SymptomLogView(userId: authManager.currentUserId ?? "")
         }
         .sheet(isPresented: $showLogVitals) {
-            LogVitalsView()
+            LogVitalsView(selectedTab: $selectedTab)
         }
         .ignoresSafeArea(.keyboard)
         .onAppear {

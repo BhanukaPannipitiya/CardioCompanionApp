@@ -848,4 +848,184 @@ class APIService {
             }
         }.resume()
     }
+
+    func fetchUserProfile(completion: @escaping (Result<UserProfile, Error>) -> Void) {
+        guard let url = URL(string: "\(baseURL)/users/profile") else {
+            let error = NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])
+            print("❌ Invalid URL: \(baseURL)/users/profile")
+            completion(.failure(error))
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        guard let token = token else {
+            let error = NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "No authentication token available"])
+            print("❌ No authentication token available for fetchUserProfile")
+            completion(.failure(error))
+            return
+        }
+        
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        print("🚀 Sending fetch user profile request to: \(url)")
+        print("📝 Request headers: \(request.allHTTPHeaderFields ?? [:])")
+        
+        URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
+            if let error = error {
+                print("❌ Network error in fetchUserProfile: \(error.localizedDescription)")
+                completion(.failure(error))
+                return
+            }
+            
+            if let httpResponse = response as? HTTPURLResponse {
+                print("📥 Response status: \(httpResponse.statusCode)")
+                print("📥 Response headers: \(httpResponse.allHeaderFields)")
+                
+                switch httpResponse.statusCode {
+                case 200...299:
+                    guard let data = data else {
+                        let error = NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "No data received"])
+                        print("❌ No data received in fetchUserProfile response")
+                        completion(.failure(error))
+                        return
+                    }
+                    
+                    if let responseString = String(data: data, encoding: .utf8) {
+                        print("📥 Raw response data: \(responseString)")
+                    } else {
+                        print("⚠️ Could not convert response data to string for logging")
+                    }
+                    
+                    do {
+                        let profile = try JSONDecoder().decode(UserProfile.self, from: data)
+                        print("✅ Successfully decoded user profile")
+                        completion(.success(profile))
+                    } catch {
+                        print("❌ Decoding error in fetchUserProfile: \(error.localizedDescription)")
+                        if let decodingError = error as? DecodingError {
+                            switch decodingError {
+                            case .dataCorrupted(let context):
+                                print("❌ Data corrupted: \(context.debugDescription)")
+                            case .keyNotFound(let key, let context):
+                                print("❌ Key '\(key)' not found: \(context.debugDescription)")
+                            case .typeMismatch(let type, let context):
+                                print("❌ Type mismatch for \(type): \(context.debugDescription)")
+                            case .valueNotFound(let type, let context):
+                                print("❌ Value not found for \(type): \(context.debugDescription)")
+                            @unknown default:
+                                print("❌ Unknown decoding error")
+                            }
+                        }
+                        completion(.failure(error))
+                    }
+                case 401:
+                    print("⚠️ Authentication failed in fetchUserProfile, attempting token refresh")
+                    self?.handleUnauthorizedError { success in
+                        if success {
+                            print("✅ Token refresh successful, retrying fetchUserProfile")
+                            self?.fetchUserProfile(completion: completion)
+                        } else {
+                            let error = NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "Authentication failed"])
+                            print("❌ Token refresh failed in fetchUserProfile")
+                            completion(.failure(error))
+                        }
+                    }
+                default:
+                    let error = NSError(domain: "", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "Server error occurred"])
+                    print("❌ Server error in fetchUserProfile: Status \(httpResponse.statusCode)")
+                    completion(.failure(error))
+                }
+            } else {
+                let error = NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "No HTTP response received"])
+                print("❌ No HTTP response received in fetchUserProfile")
+                completion(.failure(error))
+            }
+        }.resume()
+    }
+
+    func updateUserProfile(profile: [String: Any], completion: @escaping (Result<Void, Error>) -> Void) {
+        guard let url = URL(string: "\(baseURL)/users/profile") else {
+            let error = NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])
+            print("❌ Invalid URL: \(baseURL)/users/profile")
+            completion(.failure(error))
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "PATCH"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        guard let token = token else {
+            let error = NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "No authentication token available"])
+            print("❌ No authentication token available for updateUserProfile")
+            completion(.failure(error))
+            return
+        }
+        
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: profile)
+            if let jsonString = String(data: request.httpBody!, encoding: .utf8) {
+                print("📤 Request body: \(jsonString)")
+            }
+        } catch {
+            print("❌ Failed to encode profile data: \(error.localizedDescription)")
+            completion(.failure(error))
+            return
+        }
+        
+        print("🚀 Sending update profile request to: \(url)")
+        print("📝 Request headers: \(request.allHTTPHeaderFields ?? [:])")
+        
+        URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
+            if let error = error {
+                print("❌ Network error in updateUserProfile: \(error.localizedDescription)")
+                completion(.failure(error))
+                return
+            }
+            
+            if let httpResponse = response as? HTTPURLResponse {
+                print("📥 Response status: \(httpResponse.statusCode)")
+                print("📥 Response headers: \(httpResponse.allHeaderFields)")
+                
+                switch httpResponse.statusCode {
+                case 200...299:
+                    print("✅ Profile updated successfully")
+                    completion(.success(()))
+                case 401:
+                    print("⚠️ Authentication failed in updateUserProfile, attempting token refresh")
+                    self?.handleUnauthorizedError { success in
+                        if success {
+                            print("✅ Token refresh successful, retrying updateUserProfile")
+                            self?.updateUserProfile(profile: profile, completion: completion)
+                        } else {
+                            let error = NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "Authentication failed"])
+                            print("❌ Token refresh failed in updateUserProfile")
+                            completion(.failure(error))
+                        }
+                    }
+                default:
+                    let error = NSError(domain: "", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "Server error occurred"])
+                    print("❌ Server error in updateUserProfile: Status \(httpResponse.statusCode)")
+                    completion(.failure(error))
+                }
+            }
+        }.resume()
+    }
+
+    func getSymptomReports(userId: String, startDate: Date, endDate: Date) async throws -> [SymptomLog] {
+        return try await withCheckedThrowingContinuation { continuation in
+            fetchSymptomLogs(startDate: startDate, endDate: endDate) { result in
+                switch result {
+                case .success(let logs):
+                    continuation.resume(returning: logs)
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
 }

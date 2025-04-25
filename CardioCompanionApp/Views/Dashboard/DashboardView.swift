@@ -4,7 +4,6 @@ import SwiftUI
 struct DashboardView: View {
     // Sample data - in a real app, this would come from your data model
     private let healthScore = HealthScore(score: 95, streakDays: 5, achievements: ["5-Day Achievement"])
-    private let vitalReading = VitalReading(heartRate: 70, oxygenLevel: 95, bloodPressure: "111/78")
     
     var body: some View {
         ScrollView {
@@ -15,13 +14,9 @@ struct DashboardView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal)
                 
-                HealthScoreCard(score: healthScore.score, streakDays: healthScore.streakDays)
+                HealthScoreCard()
                 
-                VitalReadingsView(
-                    heartRate: vitalReading.heartRate,
-                    oxygenLevel: vitalReading.oxygenLevel,
-                    bloodPressure: vitalReading.bloodPressure
-                )
+                VitalReadingsView()
                 
                 MedicationAppointmentRow()
                 

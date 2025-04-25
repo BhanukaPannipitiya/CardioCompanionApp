@@ -1,4 +1,5 @@
 import SwiftUI
+import HealthKit
 
 struct VitalReadingCard: View {
     let iconName: String
@@ -22,9 +23,19 @@ struct VitalReadingCard: View {
 }
 
 struct VitalReadingsView: View {
-    let heartRate: Int
-    let oxygenLevel: Int
-    let bloodPressure: String
+    @StateObject private var vitalsManager = VitalsManager.shared
+    @State private var heartRate: Double = 0
+    @State private var oxygenLevel: Double = 0
+    @State private var systolic: Double = 0
+    @State private var diastolic: Double = 0
+    @State private var isLoading = true
+    
+    var bloodPressureString: String {
+        if systolic == 0 || diastolic == 0 {
+            return "---/---"
+        }
+        return "\(Int(systolic))/\(Int(diastolic))"
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -35,19 +46,19 @@ struct VitalReadingsView: View {
             HStack {
                 VitalReadingCard(
                     iconName: "heart.fill",
-                    value: "\(heartRate) BPM",
+                    value: isLoading ? "..." : "\(Int(heartRate)) BPM",
                     label: "Heart rate"
                 )
                 
                 VitalReadingCard(
                     iconName: "lungs.fill",
-                    value: "\(oxygenLevel)%",
+                    value: isLoading ? "..." : "\(Int(oxygenLevel))%",
                     label: "Oxygen"
                 )
                 
                 VitalReadingCard(
                     iconName: "waveform.path.ecg",
-                    value: bloodPressure,
+                    value: isLoading ? "..." : bloodPressureString,
                     label: "Blood Pressure"
                 )
             }
@@ -56,12 +67,47 @@ struct VitalReadingsView: View {
             .cornerRadius(12)
             .padding(.horizontal)
             
-            Button(action: {}) {
+            NavigationLink(destination: TrendsView()) {
                 Text("View more trends")
                     .font(.caption)
                     .foregroundColor(.blue)
             }
             .padding(.horizontal)
+        }
+        .task {
+            await loadLatestVitals()
+        }
+    }
+    
+    private func loadLatestVitals() async {
+        isLoading = true
+        defer { isLoading = false }
+        
+        let calendar = Calendar.current
+        let now = Date()
+        let startOfDay = calendar.startOfDay(for: now)
+        
+        do {
+            // Fetch heart rate
+            let heartRateData = try await vitalsManager.fetchHeartRateData(from: startOfDay, to: now)
+            if let latestHeartRate = heartRateData.last?.value {
+                heartRate = latestHeartRate
+            }
+            
+            // Fetch oxygen level
+            let oxygenData = try await vitalsManager.fetchOxygenData(from: startOfDay, to: now)
+            if let latestOxygen = oxygenData.last?.value {
+                oxygenLevel = latestOxygen
+            }
+            
+            // Fetch blood pressure
+            let bloodPressureData = try await vitalsManager.fetchBloodPressureData(from: startOfDay, to: now)
+            if let latestBP = bloodPressureData.last {
+                systolic = latestBP.systolic
+                diastolic = latestBP.diastolic
+            }
+        } catch {
+            print("Error loading vitals: \(error)")
         }
     }
 } 
