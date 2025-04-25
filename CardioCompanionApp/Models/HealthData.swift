@@ -14,10 +14,4 @@ struct VitalReading {
 
 struct Appointment {
     var date: Date
-}
-
-struct EducationResource {
-    var title: String
-    var description: String
-    var isFeatured: Bool
 } 
