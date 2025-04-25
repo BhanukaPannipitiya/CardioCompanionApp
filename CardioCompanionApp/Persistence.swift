@@ -2,7 +2,7 @@
 //  Persistence.swift
 //  CardioCompanionApp
 //
-//  Created by Bhanuka  Pannipitiya  on 2025-04-15.
+//  Created by Bhanuka Pannipitiya on 2025-04-15.
 //
 
 import CoreData
@@ -15,14 +15,16 @@ struct PersistenceController {
         let result = PersistenceController(inMemory: true)
         let viewContext = result.container.viewContext
         for _ in 0..<10 {
-            let newItem = Item(context: viewContext)
-            newItem.timestamp = Date()
+            let newItem = MedicalAppointment(context: viewContext) // Changed from Item to MedicalAppointment
+            newItem.title = "Sample Appointment"
+            newItem.date = Date()
+            newItem.location = "Sample Location"
+            newItem.notes = "Sample Notes"
+            newItem.id = UUID()
         }
         do {
             try viewContext.save()
         } catch {
-            // Replace this implementation with code to handle the error appropriately.
-            // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
             let nsError = error as NSError
             fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
         }
@@ -33,14 +35,22 @@ struct PersistenceController {
 
     init(inMemory: Bool = false) {
         container = NSPersistentContainer(name: "CardioCompanionApp")
-        if inMemory {
+
+        if !inMemory {
+            // Configure the persistent store to use the App Group container
+            guard let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.com.appointment.temp") else {
+                fatalError("Unable to access App Group container for group.com.appointment.temp")
+            }
+            let storeURL = containerURL.appendingPathComponent("CardioCompanionApp.sqlite")
+            let description = NSPersistentStoreDescription(url: storeURL)
+            container.persistentStoreDescriptions = [description]
+        } else {
+            // For in-memory store (e.g., previews), use /dev/null
             container.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
         }
+
         container.loadPersistentStores(completionHandler: { (storeDescription, error) in
             if let error = error as NSError? {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-
                 /*
                  Typical reasons for an error here include:
                  * The parent directory does not exist, cannot be created, or disallows writing.

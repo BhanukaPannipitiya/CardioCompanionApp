@@ -1,4 +1,5 @@
 import SwiftUI
+import MapKit
 
 struct ProfileView: View {
     @Environment(\.dismiss) private var dismiss
@@ -9,6 +10,7 @@ struct ProfileView: View {
     @State private var editedAddress: String = ""
     @State private var editedDateOfBirth: Date = Date()
     @State private var showingDatePicker = false
+    @State private var showingCardiacCenterMap = false
     @EnvironmentObject private var authManager: AuthManager
     @StateObject private var viewModel = ProfileViewModel()
     private let apiService = APIService.shared
@@ -51,7 +53,7 @@ struct ProfileView: View {
                 }
                 
                 // Cardiac center locator
-                Button(action: {}) {
+                NavigationLink(destination: CardiacCenterMapView(), isActive: $showingCardiacCenterMap) {
                     HStack {
                         Image(systemName: "location.circle.fill")
                             .foregroundColor(.red)
@@ -200,10 +202,60 @@ struct ProfileView: View {
                 .padding(.horizontal)
                 
                 // Settings
-                VStack(spacing: 0) {
-                    SettingsButton(icon: "bell.fill", title: "Notifications")
-                    SettingsButton(icon: "gear", title: "Settings")
-                    SettingsButton(icon: "questionmark.circle", title: "Help")
+                VStack(spacing: 24) {
+                    Button(action: {
+                        // Add help action here
+                    }) {
+                        HStack {
+                            Image(systemName: "questionmark.circle.fill")
+                                .foregroundColor(.blue)
+                            Text("Help & Support")
+                                .foregroundColor(.primary)
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .foregroundColor(.gray)
+                        }
+                        .padding()
+                    }
+                    .background(Color.white)
+                    .cornerRadius(12)
+                    .padding(.horizontal)
+                    
+                    // Help Cards
+                    VStack(spacing: 20) {
+                        HelpCard(
+                            icon: "heart.text.square.fill",
+                            title: "Health Tracking",
+                            description: "Learn how to track your heart health metrics and understand your progress",
+                            color: .red
+                        )
+                        
+                        HelpCard(
+                            icon: "chart.line.uptrend.xyaxis",
+                            title: "Progress Analysis",
+                            description: "Understand your health trends and get insights from your data",
+                            color: .blue
+                        )
+                        
+                        HelpCard(
+                            icon: "bell.badge.fill",
+                            title: "Reminders & Alerts",
+                            description: "Set up medication reminders and appointment notifications",
+                            color: .orange
+                        )
+                        
+                        HelpCard(
+                            icon: "person.2.fill",
+                            title: "Support Network",
+                            description: "Connect with healthcare providers and get professional guidance",
+                            color: .green
+                        )
+                    }
+                    .padding(.horizontal)
+                    
+                    Spacer()
+                        .frame(height: 20)
+                    
                     Button(action: {
                         showingLogoutAlert = true
                     }) {
@@ -216,10 +268,11 @@ struct ProfileView: View {
                         }
                         .padding()
                     }
+                    .background(Color.white)
+                    .cornerRadius(12)
+                    .padding(.horizontal)
                 }
-                .background(Color.white)
-                .cornerRadius(12)
-                .padding(.horizontal)
+                .padding(.vertical, 24)
             }
             .padding(.vertical)
             .padding(.bottom, 20)
@@ -358,21 +411,39 @@ struct PremiumPlanButton: View {
     }
 }
 
-struct SettingsButton: View {
+struct HelpCard: View {
     let icon: String
     let title: String
+    let description: String
+    let color: Color
     
     var body: some View {
-        Button(action: {}) {
-            HStack {
-                Image(systemName: icon)
+        HStack(spacing: 16) {
+            Image(systemName: icon)
+                .font(.system(size: 24))
+                .foregroundColor(.white)
+                .frame(width: 50, height: 50)
+                .background(color)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            
+            VStack(alignment: .leading, spacing: 4) {
                 Text(title)
-                Spacer()
-                Image(systemName: "chevron.right")
+                    .font(.headline)
+                    .foregroundColor(.primary)
+                Text(description)
+                    .font(.subheadline)
                     .foregroundColor(.gray)
+                    .lineLimit(2)
             }
-            .padding()
+            
+            Spacer()
+            
+            Image(systemName: "chevron.right")
+                .foregroundColor(.gray)
         }
-        .foregroundColor(.primary)
+        .padding()
+        .background(Color.white)
+        .cornerRadius(16)
+        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
     }
 } 

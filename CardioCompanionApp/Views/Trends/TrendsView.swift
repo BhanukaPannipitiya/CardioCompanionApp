@@ -13,6 +13,14 @@ struct TrendsView: View {
     @State private var isLoading = true
     @State private var selectedVitalType: VitalType = .heartRate
     
+    // Update color constants
+    private let primaryColor = Color.blue
+    private let heartRateColor = Color.red
+    private let oxygenColor = Color.blue
+    private let bloodPressureColor = Color.purple
+    private let healthScoreColor = Color.green
+    private let backgroundColor = Color(red: 0.95, green: 0.95, blue: 0.97)
+    
     enum TimeRange: String, CaseIterable {
         case week = "7 Days"
         case month = "1 Month"
@@ -50,6 +58,14 @@ struct TrendsView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
+                // Title
+                Text("Health Trends")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .foregroundColor(.black)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal)
+                
                 // Time range selector
                 HStack {
                     ForEach(TimeRange.allCases, id: \.self) { range in
@@ -57,9 +73,13 @@ struct TrendsView: View {
                             Text(range.rawValue)
                                 .padding(.vertical, 8)
                                 .padding(.horizontal, 16)
-                                .background(selectedTimeRange == range ? Color.blue : Color.clear)
-                                .foregroundColor(selectedTimeRange == range ? .white : .primary)
+                                .background(selectedTimeRange == range ? primaryColor : Color.clear)
+                                .foregroundColor(selectedTimeRange == range ? .white : primaryColor)
                                 .cornerRadius(8)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(primaryColor, lineWidth: 1)
+                                )
                         }
                     }
                     Spacer()
@@ -71,22 +91,26 @@ struct TrendsView: View {
                     VitalStatCard(icon: "waveform.path.ecg",
                                 title: "Heart Rate",
                                 value: String(format: "%.0f", latestHeartRate),
-                                unit: "BPM")
+                                unit: "BPM",
+                                color: heartRateColor)
                     
                     VitalStatCard(icon: "lungs.fill",
                                 title: "Oxygen Level",
                                 value: String(format: "%.1f", latestOxygenLevel),
-                                unit: "%")
+                                unit: "%",
+                                color: oxygenColor)
                     
                     VitalStatCard(icon: "heart.fill",
                                 title: "Blood Pressure",
                                 value: latestBloodPressure,
-                                unit: "mmHg")
+                                unit: "mmHg",
+                                color: bloodPressureColor)
                     
                     VitalStatCard(icon: "chart.bar.fill",
                                 title: "Health Score",
                                 value: String(healthScore),
-                                unit: "/100")
+                                unit: "/100",
+                                color: healthScoreColor)
                 }
                 .padding(.horizontal)
                 
@@ -97,9 +121,13 @@ struct TrendsView: View {
                             Text(type.rawValue)
                                 .padding(.vertical, 6)
                                 .padding(.horizontal, 12)
-                                .background(selectedVitalType == type ? Color.blue : Color.clear)
-                                .foregroundColor(selectedVitalType == type ? .white : .primary)
+                                .background(selectedVitalType == type ? primaryColor : Color.clear)
+                                .foregroundColor(selectedVitalType == type ? .white : primaryColor)
                                 .cornerRadius(6)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 6)
+                                        .stroke(primaryColor, lineWidth: 1)
+                                )
                         }
                     }
                     Spacer()
@@ -110,6 +138,7 @@ struct TrendsView: View {
                 VStack(alignment: .leading) {
                     Text("\(selectedVitalType.rawValue) Trends")
                         .font(.headline)
+                        .foregroundColor(.black)
                         .padding(.horizontal)
                     
                     if isLoading {
@@ -118,19 +147,25 @@ struct TrendsView: View {
                     } else {
                         switch selectedVitalType {
                         case .heartRate:
-                            TrendLineChart(data: heartRateData)
+                            TrendLineChart(data: heartRateData, color: heartRateColor)
                         case .oxygenLevel:
-                            TrendLineChart(data: oxygenData)
+                            TrendLineChart(data: oxygenData, color: oxygenColor)
                         case .bloodPressure:
                             BloodPressureChart(data: bloodPressureData)
                         }
                     }
                 }
+                .padding()
+                .background(Color.white)
+                .cornerRadius(16)
+                .shadow(radius: 5)
+                .padding(.horizontal)
                 
                 // Symptom Occurrence
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Symptom Occurrence")
                         .font(.headline)
+                        .foregroundColor(.black)
                         .padding(.horizontal)
                     
                     if symptomData.isEmpty {
@@ -145,13 +180,18 @@ struct TrendsView: View {
                                     x: .value("Symptom", symptom.name),
                                     y: .value("Count", symptom.count)
                                 )
-                                .foregroundStyle(Color.blue)
+                                .foregroundStyle(primaryColor)
                             }
                         }
                         .frame(height: 200)
                         .padding()
                     }
                 }
+                .padding()
+                .background(Color.white)
+                .cornerRadius(16)
+                .shadow(radius: 5)
+                .padding(.horizontal)
                 
                 // Generate Report Button
                 Button(action: generateHealthReport) {
@@ -160,13 +200,15 @@ struct TrendsView: View {
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(Color.blue)
+                        .background(primaryColor)
                         .cornerRadius(12)
+                        .shadow(radius: 3)
                 }
                 .padding(.horizontal)
             }
             .padding(.vertical)
         }
+        .background(backgroundColor)
         .navigationTitle("Health Trends")
         .task {
             await loadData()
@@ -240,12 +282,13 @@ struct VitalStatCard: View {
     let title: String
     let value: String
     let unit: String
+    let color: Color
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Image(systemName: icon)
-                    .foregroundColor(.blue)
+                    .foregroundColor(color)
                 Text(title)
                     .font(.caption)
                     .foregroundColor(.gray)
@@ -254,6 +297,7 @@ struct VitalStatCard: View {
             Text(value)
                 .font(.title2)
                 .fontWeight(.semibold)
+                .foregroundColor(color)
             
             Text(unit)
                 .font(.caption)
@@ -262,13 +306,14 @@ struct VitalStatCard: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
         .background(Color.white)
-        .cornerRadius(12)
-        .shadow(radius: 2)
+        .cornerRadius(16)
+        .shadow(radius: 3)
     }
 }
 
 struct TrendLineChart: View {
     let data: [VitalDataPoint]
+    let color: Color
     
     var body: some View {
         Chart {
@@ -277,12 +322,14 @@ struct TrendLineChart: View {
                     x: .value("Date", point.date),
                     y: .value("Value", point.value)
                 )
+                .foregroundStyle(color)
                 .interpolationMethod(.catmullRom)
                 
                 PointMark(
                     x: .value("Date", point.date),
                     y: .value("Value", point.value)
                 )
+                .foregroundStyle(color)
             }
         }
         .frame(height: 200)
@@ -300,13 +347,13 @@ struct BloodPressureChart: View {
                     x: .value("Date", point.date),
                     y: .value("Systolic", point.systolic)
                 )
-                .foregroundStyle(.red)
+                .foregroundStyle(Color.purple)
                 
                 LineMark(
                     x: .value("Date", point.date),
                     y: .value("Diastolic", point.diastolic)
                 )
-                .foregroundStyle(.blue)
+                .foregroundStyle(Color.purple.opacity(0.6))
             }
         }
         .frame(height: 200)

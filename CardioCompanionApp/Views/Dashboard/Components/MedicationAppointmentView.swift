@@ -4,10 +4,31 @@ struct MedicationView: View {
     @StateObject private var viewModel = DashboardViewModel()
     @Environment(\.scenePhase) private var scenePhase
     
+    // Color constants
+    private let primaryColor = Color.blue
+    private let medicationColor = Color.green
+    private let errorColor = Color.red
+    private let backgroundColor = Color(.systemBackground)
+    
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Medications")
-                .font(.headline)
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("Medications")
+                    .font(.title3)
+                    .fontWeight(.bold)
+                
+                Spacer()
+                
+                NavigationLink(destination: MedicationListView()) {
+                    Text("View All")
+                        .font(.subheadline)
+                        .foregroundColor(primaryColor)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(primaryColor.opacity(0.1))
+                        .cornerRadius(8)
+                }
+            }
             
             VStack(alignment: .leading) {
                 if viewModel.isLoading {
@@ -15,76 +36,90 @@ struct MedicationView: View {
                         .frame(maxWidth: .infinity, alignment: .center)
                         .padding()
                 } else if let errorMessage = viewModel.errorMessage {
-                    VStack {
+                    VStack(spacing: 8) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(errorColor)
+                            .font(.title2)
+                        
                         Text(errorMessage)
-                            .foregroundColor(.red)
+                            .foregroundColor(errorColor)
                             .font(.subheadline)
-                        Button("Retry") {
-                            viewModel.refresh()
+                            .multilineTextAlignment(.center)
+                        
+                        Button(action: { viewModel.refresh() }) {
+                            Text("Retry")
+                                .font(.subheadline)
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                                .background(errorColor)
+                                .cornerRadius(8)
                         }
-                        .font(.caption)
                     }
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding()
                 } else if let nextMedication = viewModel.nextMedication,
                           let nextTime = viewModel.nextMedicationTime {
-                    HStack(alignment: .top) {
+                    HStack(alignment: .top, spacing: 12) {
                         Image(systemName: "pills.fill")
                             .font(.title2)
-                            .foregroundColor(.green)
-                            .padding(.top, 2)
+                            .foregroundColor(medicationColor)
+                            .frame(width: 40, height: 40)
+                            .background(medicationColor.opacity(0.1))
+                            .clipShape(Circle())
                         
-                        VStack(alignment: .leading) {
+                        VStack(alignment: .leading, spacing: 4) {
                             Text("Next dose")
                                 .font(.subheadline)
-                            Text("\(nextMedication.name)")
+                                .foregroundColor(.gray)
+                            
+                            Text(nextMedication.name)
                                 .font(.headline)
-                            Text("at \(nextTime, formatter: timeFormatter)")
-                                .font(.subheadline)
-                                .foregroundColor(.red)
+                                .foregroundColor(.primary)
+                            
+                            HStack {
+                                Image(systemName: "clock.fill")
+                                    .foregroundColor(errorColor)
+                                Text("at \(nextTime, formatter: timeFormatter)")
+                                    .font(.subheadline)
+                                    .foregroundColor(errorColor)
+                            }
                         }
                         
                         Spacer()
                     }
-                    
-                    HStack {
-                        Spacer()
-                        NavigationLink(destination: MedicationListView()) {
-                            Text("View all")
-                                .font(.caption)
-                        }
-                    }
-                    .padding(.top, 4)
-                    
+                    .padding()
+                    .background(backgroundColor)
+                    .cornerRadius(16)
+                    .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
                 } else {
-                    HStack(alignment: .top) {
+                    HStack(alignment: .top, spacing: 12) {
                         Image(systemName: "pills.fill")
                             .font(.title2)
-                            .foregroundColor(.green)
-                            .padding(.top, 2)
+                            .foregroundColor(medicationColor)
+                            .frame(width: 40, height: 40)
+                            .background(medicationColor.opacity(0.1))
+                            .clipShape(Circle())
                         
-                        VStack(alignment: .leading) {
+                        VStack(alignment: .leading, spacing: 4) {
                             Text("No upcoming medications")
                                 .font(.subheadline)
+                                .foregroundColor(.gray)
                         }
                         
                         Spacer()
                     }
-                    
-                    HStack {
-                        Spacer()
-                        NavigationLink(destination: MedicationListView()) {
-                            Text("View all")
-                                .font(.caption)
-                        }
-                    }
-                    .padding(.top, 4)
+                    .padding()
+                    .background(backgroundColor)
+                    .cornerRadius(16)
+                    .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
                 }
             }
-            .padding()
-            .background(Color(.systemBackground))
-            .cornerRadius(12)
         }
+        .padding()
+        .background(Color(.systemGroupedBackground))
+        .cornerRadius(20)
+        .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 5)
         .onAppear {
             viewModel.refresh()
         }
@@ -105,10 +140,31 @@ struct MedicationView: View {
 struct AppointmentView: View {
     @StateObject private var viewModel = AppointmentViewModel()
     
+    // Color constants
+    private let primaryColor = Color.blue
+    private let appointmentColor = Color.orange
+    private let errorColor = Color.red
+    private let backgroundColor = Color(.systemBackground)
+    
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Appointments")
-                .font(.headline)
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("Appointments")
+                    .font(.title3)
+                    .fontWeight(.bold)
+                
+                Spacer()
+                
+                NavigationLink(destination: AppointmentsListView()) {
+                    Text("View All")
+                        .font(.subheadline)
+                        .foregroundColor(primaryColor)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(primaryColor.opacity(0.1))
+                        .cornerRadius(8)
+                }
+            }
             
             VStack(alignment: .leading) {
                 if viewModel.isLoading {
@@ -116,27 +172,51 @@ struct AppointmentView: View {
                         .frame(maxWidth: .infinity, alignment: .center)
                         .padding()
                 } else if let errorMessage = viewModel.errorMessage {
-                    VStack {
+                    VStack(spacing: 8) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(errorColor)
+                            .font(.title2)
+                        
                         Text(errorMessage)
-                            .foregroundColor(.red)
+                            .foregroundColor(errorColor)
                             .font(.subheadline)
-                        Button("Retry") {
-                            viewModel.fetchAppointments()
+                            .multilineTextAlignment(.center)
+                        
+                        Button(action: { viewModel.fetchAppointments() }) {
+                            Text("Retry")
+                                .font(.subheadline)
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                                .background(errorColor)
+                                .cornerRadius(8)
                         }
-                        .font(.caption)
                     }
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding()
                 } else if let nextAppointment = viewModel.appointments.first {
-                    HStack {
-                        VStack(alignment: .leading) {
+                    HStack(alignment: .top, spacing: 12) {
+                        Image(systemName: "calendar")
+                            .font(.title2)
+                            .foregroundColor(appointmentColor)
+                            .frame(width: 40, height: 40)
+                            .background(appointmentColor.opacity(0.1))
+                            .clipShape(Circle())
+                        
+                        VStack(alignment: .leading, spacing: 4) {
                             Text("Upcoming")
                                 .font(.subheadline)
+                                .foregroundColor(.gray)
+                            
                             Text(nextAppointment.title ?? "")
                                 .font(.headline)
-                            HStack {
+                                .foregroundColor(.primary)
+                            
+                            HStack(spacing: 8) {
+                                Image(systemName: "calendar")
+                                    .foregroundColor(appointmentColor)
                                 Text("\(nextAppointment.date ?? Date(), formatter: dayFormatter)")
-                                    .foregroundColor(.red)
+                                    .foregroundColor(appointmentColor)
                                 Text(nextAppointment.date ?? Date(), formatter: monthFormatter)
                                 Text(nextAppointment.date ?? Date(), formatter: timeFormatter)
                             }
@@ -144,31 +224,49 @@ struct AppointmentView: View {
                             
                             if let location = nextAppointment.location, !location.isEmpty {
                                 HStack {
-                                    Image(systemName: "location")
+                                    Image(systemName: "location.fill")
+                                        .foregroundColor(appointmentColor)
                                     Text(location)
                                         .font(.subheadline)
+                                        .foregroundColor(.gray)
                                 }
                             }
                         }
                         
                         Spacer()
                     }
+                    .padding()
+                    .background(backgroundColor)
+                    .cornerRadius(16)
+                    .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
                 } else {
-                    HStack {
-                        VStack(alignment: .leading) {
+                    HStack(alignment: .top, spacing: 12) {
+                        Image(systemName: "calendar")
+                            .font(.title2)
+                            .foregroundColor(appointmentColor)
+                            .frame(width: 40, height: 40)
+                            .background(appointmentColor.opacity(0.1))
+                            .clipShape(Circle())
+                        
+                        VStack(alignment: .leading, spacing: 4) {
                             Text("No upcoming appointments")
                                 .font(.subheadline)
+                                .foregroundColor(.gray)
                         }
                         
                         Spacer()
                     }
+                    .padding()
+                    .background(backgroundColor)
+                    .cornerRadius(16)
+                    .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
                 }
             }
-            .padding()
-            .background(Color(.systemBackground))
-            .cornerRadius(12)
         }
-        .contentShape(Rectangle())
+        .padding()
+        .background(Color(.systemGroupedBackground))
+        .cornerRadius(20)
+        .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 5)
         .onAppear {
             viewModel.fetchAppointments()
         }
@@ -195,12 +293,9 @@ struct AppointmentView: View {
 
 struct MedicationAppointmentRow: View {
     var body: some View {
-        HStack(spacing: 16) {
+        VStack(spacing: 16) {
             MedicationView()
-            NavigationLink(destination: AppointmentsListView()) {
-                AppointmentView()
-            }
-            .buttonStyle(PlainButtonStyle())
+            AppointmentView()
         }
         .padding(.horizontal)
     }

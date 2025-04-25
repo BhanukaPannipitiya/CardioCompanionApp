@@ -6,8 +6,51 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		A74D6F532DBBD14F00BD7370 /* Intents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A74D6F522DBBD14F00BD7370 /* Intents.framework */; };
+		A74D6F5E2DBBD15000BD7370 /* IntentsUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A74D6F5D2DBBD15000BD7370 /* IntentsUI.framework */; };
+		A74D6F682DBBD15000BD7370 /* CreateAppointmentIntentUI.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A74D6F5C2DBBD15000BD7370 /* CreateAppointmentIntentUI.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		A74D6F6B2DBBD15000BD7370 /* CreateAppointmentIntent.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A74D6F502DBBD14F00BD7370 /* CreateAppointmentIntent.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		A74D6F662DBBD15000BD7370 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A7179E012DAE236A006A3B56 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A74D6F5B2DBBD15000BD7370;
+			remoteInfo = CreateAppointmentIntentUI;
+		};
+		A74D6F692DBBD15000BD7370 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A7179E012DAE236A006A3B56 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A74D6F4F2DBBD14F00BD7370;
+			remoteInfo = CreateAppointmentIntent;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		A74D6F402DBBCAF700BD7370 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				A74D6F682DBBD15000BD7370 /* CreateAppointmentIntentUI.appex in Embed Foundation Extensions */,
+				A74D6F6B2DBBD15000BD7370 /* CreateAppointmentIntent.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		A7179E092DAE236A006A3B56 /* CardioCompanionApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CardioCompanionApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A74D6F502DBBD14F00BD7370 /* CreateAppointmentIntent.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = CreateAppointmentIntent.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		A74D6F522DBBD14F00BD7370 /* Intents.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Intents.framework; path = System/Library/Frameworks/Intents.framework; sourceTree = SDKROOT; };
+		A74D6F5C2DBBD15000BD7370 /* CreateAppointmentIntentUI.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = CreateAppointmentIntentUI.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		A74D6F5D2DBBD15000BD7370 /* IntentsUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IntentsUI.framework; path = System/Library/Frameworks/IntentsUI.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -18,6 +61,36 @@
 			);
 			target = A7179E082DAE236A006A3B56 /* CardioCompanionApp */;
 		};
+		A74D6F6F2DBBD15000BD7370 /* Exceptions for "CreateAppointmentIntentUI" folder in "CreateAppointmentIntentUI" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = A74D6F5B2DBBD15000BD7370 /* CreateAppointmentIntentUI */;
+		};
+		A74D6F732DBBD15000BD7370 /* Exceptions for "CreateAppointmentIntent" folder in "CreateAppointmentIntent" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = A74D6F4F2DBBD14F00BD7370 /* CreateAppointmentIntent */;
+		};
+		A74D6F7A2DBBD32A00BD7370 /* Exceptions for "CardioCompanionApp" folder in "CreateAppointmentIntent" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				CardioCompanionApp.xcdatamodeld,
+				Intents.intentdefinition,
+			);
+			target = A74D6F4F2DBBD14F00BD7370 /* CreateAppointmentIntent */;
+		};
+		A74D6F7B2DBBD32A00BD7370 /* Exceptions for "CardioCompanionApp" folder in "CreateAppointmentIntentUI" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				CardioCompanionApp.xcdatamodeld,
+				Intents.intentdefinition,
+			);
+			target = A74D6F5B2DBBD15000BD7370 /* CreateAppointmentIntentUI */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -25,8 +98,26 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				A74D6E1C2DBB4ADA00BD7370 /* Exceptions for "CardioCompanionApp" folder in "CardioCompanionApp" target */,
+				A74D6F7A2DBBD32A00BD7370 /* Exceptions for "CardioCompanionApp" folder in "CreateAppointmentIntent" target */,
+				A74D6F7B2DBBD32A00BD7370 /* Exceptions for "CardioCompanionApp" folder in "CreateAppointmentIntentUI" target */,
 			);
 			path = CardioCompanionApp;
+			sourceTree = "<group>";
+		};
+		A74D6F542DBBD14F00BD7370 /* CreateAppointmentIntent */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				A74D6F732DBBD15000BD7370 /* Exceptions for "CreateAppointmentIntent" folder in "CreateAppointmentIntent" target */,
+			);
+			path = CreateAppointmentIntent;
+			sourceTree = "<group>";
+		};
+		A74D6F5F2DBBD15000BD7370 /* CreateAppointmentIntentUI */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				A74D6F6F2DBBD15000BD7370 /* Exceptions for "CreateAppointmentIntentUI" folder in "CreateAppointmentIntentUI" target */,
+			);
+			path = CreateAppointmentIntentUI;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -39,6 +130,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A74D6F4D2DBBD14F00BD7370 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A74D6F532DBBD14F00BD7370 /* Intents.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A74D6F592DBBD15000BD7370 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A74D6F5E2DBBD15000BD7370 /* IntentsUI.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -46,6 +153,9 @@
 			isa = PBXGroup;
 			children = (
 				A7179E0B2DAE236A006A3B56 /* CardioCompanionApp */,
+				A74D6F542DBBD14F00BD7370 /* CreateAppointmentIntent */,
+				A74D6F5F2DBBD15000BD7370 /* CreateAppointmentIntentUI */,
+				A74D6F512DBBD14F00BD7370 /* Frameworks */,
 				A7179E0A2DAE236A006A3B56 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -54,8 +164,19 @@
 			isa = PBXGroup;
 			children = (
 				A7179E092DAE236A006A3B56 /* CardioCompanionApp.app */,
+				A74D6F502DBBD14F00BD7370 /* CreateAppointmentIntent.appex */,
+				A74D6F5C2DBBD15000BD7370 /* CreateAppointmentIntentUI.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		A74D6F512DBBD14F00BD7370 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				A74D6F522DBBD14F00BD7370 /* Intents.framework */,
+				A74D6F5D2DBBD15000BD7370 /* IntentsUI.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -68,10 +189,13 @@
 				A7179E052DAE236A006A3B56 /* Sources */,
 				A7179E062DAE236A006A3B56 /* Frameworks */,
 				A7179E072DAE236A006A3B56 /* Resources */,
+				A74D6F402DBBCAF700BD7370 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				A74D6F672DBBD15000BD7370 /* PBXTargetDependency */,
+				A74D6F6A2DBBD15000BD7370 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				A7179E0B2DAE236A006A3B56 /* CardioCompanionApp */,
@@ -82,6 +206,50 @@
 			productName = CardioCompanionApp;
 			productReference = A7179E092DAE236A006A3B56 /* CardioCompanionApp.app */;
 			productType = "com.apple.product-type.application";
+		};
+		A74D6F4F2DBBD14F00BD7370 /* CreateAppointmentIntent */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A74D6F702DBBD15000BD7370 /* Build configuration list for PBXNativeTarget "CreateAppointmentIntent" */;
+			buildPhases = (
+				A74D6F4C2DBBD14F00BD7370 /* Sources */,
+				A74D6F4D2DBBD14F00BD7370 /* Frameworks */,
+				A74D6F4E2DBBD14F00BD7370 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				A74D6F542DBBD14F00BD7370 /* CreateAppointmentIntent */,
+			);
+			name = CreateAppointmentIntent;
+			packageProductDependencies = (
+			);
+			productName = CreateAppointmentIntent;
+			productReference = A74D6F502DBBD14F00BD7370 /* CreateAppointmentIntent.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		A74D6F5B2DBBD15000BD7370 /* CreateAppointmentIntentUI */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A74D6F6C2DBBD15000BD7370 /* Build configuration list for PBXNativeTarget "CreateAppointmentIntentUI" */;
+			buildPhases = (
+				A74D6F582DBBD15000BD7370 /* Sources */,
+				A74D6F592DBBD15000BD7370 /* Frameworks */,
+				A74D6F5A2DBBD15000BD7370 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				A74D6F5F2DBBD15000BD7370 /* CreateAppointmentIntentUI */,
+			);
+			name = CreateAppointmentIntentUI;
+			packageProductDependencies = (
+			);
+			productName = CreateAppointmentIntentUI;
+			productReference = A74D6F5C2DBBD15000BD7370 /* CreateAppointmentIntentUI.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -94,6 +262,12 @@
 				LastUpgradeCheck = 1610;
 				TargetAttributes = {
 					A7179E082DAE236A006A3B56 = {
+						CreatedOnToolsVersion = 16.1;
+					};
+					A74D6F4F2DBBD14F00BD7370 = {
+						CreatedOnToolsVersion = 16.1;
+					};
+					A74D6F5B2DBBD15000BD7370 = {
 						CreatedOnToolsVersion = 16.1;
 					};
 				};
@@ -113,12 +287,28 @@
 			projectRoot = "";
 			targets = (
 				A7179E082DAE236A006A3B56 /* CardioCompanionApp */,
+				A74D6F4F2DBBD14F00BD7370 /* CreateAppointmentIntent */,
+				A74D6F5B2DBBD15000BD7370 /* CreateAppointmentIntentUI */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		A7179E072DAE236A006A3B56 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A74D6F4E2DBBD14F00BD7370 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A74D6F5A2DBBD15000BD7370 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -135,7 +325,34 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A74D6F4C2DBBD14F00BD7370 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A74D6F582DBBD15000BD7370 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A74D6F672DBBD15000BD7370 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A74D6F5B2DBBD15000BD7370 /* CreateAppointmentIntentUI */;
+			targetProxy = A74D6F662DBBD15000BD7370 /* PBXContainerItemProxy */;
+		};
+		A74D6F6A2DBBD15000BD7370 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A74D6F4F2DBBD14F00BD7370 /* CreateAppointmentIntent */;
+			targetProxy = A74D6F692DBBD15000BD7370 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		A7179E1A2DAE236D006A3B56 /* Debug */ = {
@@ -262,6 +479,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = CardioCompanionApp/CardioCompanionApp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -270,8 +488,13 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = CardioCompanionApp/Info.plist;
+				INFOPLIST_KEY_NSCalendarsUsageDescription = "We need access to your calendar to add your medical appointments.";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "We use Face ID to securely log you in and protect your health data.";
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "CardioCompanion needs access to read your health data to track your heart health progress over time.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "CardioCompanion needs access to save your vital readings (heart rate, blood pressure, and oxygen levels) to help you monitor your heart health.";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "We need your location to find the nearest cardiac centers and provide directions.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to find the nearest cardiac centers.";
+				INFOPLIST_KEY_NSSiriUsageDescription = "CardioCompanion needs Siri access to help you schedule appointments with your doctor.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -294,6 +517,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = CardioCompanionApp/CardioCompanionApp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -302,8 +526,13 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = CardioCompanionApp/Info.plist;
+				INFOPLIST_KEY_NSCalendarsUsageDescription = "We need access to your calendar to add your medical appointments.";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "We use Face ID to securely log you in and protect your health data.";
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "CardioCompanion needs access to read your health data to track your heart health progress over time.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "CardioCompanion needs access to save your vital readings (heart rate, blood pressure, and oxygen levels) to help you monitor your heart health.";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "We need your location to find the nearest cardiac centers and provide directions.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to find the nearest cardiac centers.";
+				INFOPLIST_KEY_NSSiriUsageDescription = "CardioCompanion needs Siri access to help you schedule appointments with your doctor.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -315,6 +544,110 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = bhanuka.CardioCompanionApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		A74D6F6D2DBBD15000BD7370 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = CreateAppointmentIntentUI/CreateAppointmentIntentUI.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5MFCUG2773;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = CreateAppointmentIntentUI/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = CreateAppointmentIntentUI;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = bhanuka.CardioCompanionApp.CreateAppointmentIntentUI;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A74D6F6E2DBBD15000BD7370 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = CreateAppointmentIntentUI/CreateAppointmentIntentUI.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5MFCUG2773;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = CreateAppointmentIntentUI/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = CreateAppointmentIntentUI;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = bhanuka.CardioCompanionApp.CreateAppointmentIntentUI;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		A74D6F712DBBD15000BD7370 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = CreateAppointmentIntent/CreateAppointmentIntent.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5MFCUG2773;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = CreateAppointmentIntent/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = CreateAppointmentIntent;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = bhanuka.CardioCompanionApp.CreateAppointmentIntent;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A74D6F722DBBD15000BD7370 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = CreateAppointmentIntent/CreateAppointmentIntent.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5MFCUG2773;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = CreateAppointmentIntent/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = CreateAppointmentIntent;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = bhanuka.CardioCompanionApp.CreateAppointmentIntent;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -338,6 +671,24 @@
 			buildConfigurations = (
 				A7179E1D2DAE236D006A3B56 /* Debug */,
 				A7179E1E2DAE236D006A3B56 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A74D6F6C2DBBD15000BD7370 /* Build configuration list for PBXNativeTarget "CreateAppointmentIntentUI" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A74D6F6D2DBBD15000BD7370 /* Debug */,
+				A74D6F6E2DBBD15000BD7370 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A74D6F702DBBD15000BD7370 /* Build configuration list for PBXNativeTarget "CreateAppointmentIntent" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A74D6F712DBBD15000BD7370 /* Debug */,
+				A74D6F722DBBD15000BD7370 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
