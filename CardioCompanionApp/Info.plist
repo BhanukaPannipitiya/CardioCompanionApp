@@ -9,5 +9,7 @@
 		<string>fetch</string>
 		<string>remote-notification</string>
 	</array>
+	<key>NSCalendarsUsageDescription</key>
+	<string>We need access to your calendar to add your medical appointments.</string>
 </dict>
 </plist>

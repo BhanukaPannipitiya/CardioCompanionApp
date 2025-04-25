@@ -1,9 +1,10 @@
 import SwiftUI
+import CoreData
 
 struct AppointmentsListView: View {
+    @StateObject private var viewModel = AppointmentViewModel()
     @State private var showingAddNewAppointment = false
-    // TODO: Replace with actual appointment data source/ViewModel
-    @State private var appointments: [AppointmentDetails] = []
+    @State private var appointmentToEdit: MedicalAppointment?
 
     var body: some View {
         NavigationView {
@@ -18,35 +19,66 @@ struct AppointmentsListView: View {
                         }
                     }
 
-                    // TODO: List actual appointments here
-                    if appointments.isEmpty {
+                    if viewModel.appointments.isEmpty {
                         Text("No upcoming appointments.")
                             .foregroundColor(.secondary)
                     } else {
-                        ForEach(appointments) { appointment in
-                            // TODO: Create AppointmentRow view
-                            Text(appointment.title)
+                        ForEach(viewModel.appointments, id: \.id) { appointment in
+                            AppointmentRow(appointment: appointment)
+                                .onTapGesture {
+                                    appointmentToEdit = appointment
+                                }
                         }
-                        .onDelete(perform: deleteAppointments) // Add swipe-to-delete if needed
+                        .onDelete(perform: viewModel.deleteAppointments)
                     }
                 }
             }
             .navigationTitle("Appointments")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton() // Standard SwiftUI Edit button
+                    EditButton()
                 }
             }
             .sheet(isPresented: $showingAddNewAppointment) {
-                // TODO: Present NewAppointmentView here
-                NewAppointmentView()
+                NewAppointmentView(viewModel: viewModel)
+            }
+            .sheet(item: $appointmentToEdit) { appointment in
+                NewAppointmentView(viewModel: viewModel, appointment: appointment)
             }
         }
     }
+}
 
-    // TODO: Implement actual deletion logic
-    private func deleteAppointments(offsets: IndexSet) {
-        appointments.remove(atOffsets: offsets)
+struct AppointmentRow: View {
+    let appointment: MedicalAppointment
+    
+    private var dateFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        return formatter
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(appointment.title ?? "")
+                .font(.headline)
+            
+            HStack {
+                Image(systemName: "calendar")
+                Text(dateFormatter.string(from: appointment.date ?? Date()))
+                    .font(.subheadline)
+            }
+            
+            if let location = appointment.location, !location.isEmpty {
+                HStack {
+                    Image(systemName: "location")
+                    Text(location)
+                        .font(.subheadline)
+                }
+            }
+        }
+        .padding(.vertical, 4)
     }
 }
 

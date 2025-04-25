@@ -1,15 +1,24 @@
 import SwiftUI
+import CoreData
 
 struct NewAppointmentView: View {
     @Environment(\.dismiss) var dismiss
+    @ObservedObject var viewModel: AppointmentViewModel
+    @StateObject private var calendarManager = CalendarManager.shared
+    @State private var appointment: MedicalAppointment?
     
-    // TODO: Add callback/binding to pass saved appointment back
-
     @State private var title: String = ""
     @State private var date: Date = Date()
     @State private var location: String = ""
     @State private var notes: String = ""
     @State private var addToCalendar: Bool = false
+    @State private var showingCalendarError = false
+    @State private var calendarError: String = ""
+
+    init(viewModel: AppointmentViewModel, appointment: MedicalAppointment? = nil) {
+        self.viewModel = viewModel
+        self._appointment = State(initialValue: appointment)
+    }
 
     var body: some View {
         NavigationView {
@@ -19,11 +28,18 @@ struct NewAppointmentView: View {
                 TextField("Location", text: $location)
                 Section("Notes") {
                     TextEditor(text: $notes)
-                        .frame(height: 100) // Adjust height as needed
+                        .frame(height: 100)
                 }
-                Toggle("Add to Calendar", isOn: $addToCalendar)
+                Section {
+                    Toggle("Add to Calendar", isOn: $addToCalendar)
+                } footer: {
+                    if calendarManager.authorizationStatus == .denied {
+                        Text("Calendar access is required. Please enable it in Settings.")
+                            .foregroundColor(.red)
+                    }
+                }
             }
-            .navigationTitle("New Appointment")
+            .navigationTitle(appointment == nil ? "New Appointment" : "Edit Appointment")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -33,31 +49,59 @@ struct NewAppointmentView: View {
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Save") {
-                        // TODO: Implement save logic
                         saveAppointment()
-                        dismiss()
                     }
-                    .disabled(title.isEmpty) // Disable save if title is empty
+                    .disabled(title.isEmpty)
                 }
+            }
+            .alert("Calendar Error", isPresented: $showingCalendarError) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(calendarError)
+            }
+        }
+        .onAppear {
+            if let appointment = appointment {
+                title = appointment.title ?? ""
+                date = appointment.date ?? Date()
+                location = appointment.location ?? ""
+                notes = appointment.notes ?? ""
             }
         }
     }
     
     private func saveAppointment() {
-        // TODO: Implement actual saving (e.g., to ViewModel, CoreData)
-        // let newAppointment = AppointmentDetails(title: title, date: date, location: location, notes: notes)
-        // Pass newAppointment back or save through ViewModel
-        print("Saving appointment:")
-        print("Title: \(title)")
-        print("Date: \(date)")
-        print("Location: \(location)")
-        print("Notes: \(notes)")
-        print("Add to Calendar: \(addToCalendar)")
+        if let appointment = appointment {
+            viewModel.updateAppointment(appointment, title: title, date: date, location: location, notes: notes)
+        } else {
+            viewModel.addAppointment(title: title, date: date, location: location, notes: notes)
+        }
         
-        // TODO: Implement calendar adding logic if addToCalendar is true
+        if addToCalendar {
+            Task {
+                do {
+                    try await calendarManager.addAppointmentToCalendar(
+                        title: title,
+                        date: date,
+                        location: location.isEmpty ? nil : location,
+                        notes: notes.isEmpty ? nil : notes
+                    )
+                    await MainActor.run {
+                        dismiss()
+                    }
+                } catch {
+                    await MainActor.run {
+                        calendarError = error.localizedDescription
+                        showingCalendarError = true
+                    }
+                }
+            }
+        } else {
+            dismiss()
+        }
     }
 }
 
 #Preview {
-    NewAppointmentView()
+    NewAppointmentView(viewModel: AppointmentViewModel())
 } 

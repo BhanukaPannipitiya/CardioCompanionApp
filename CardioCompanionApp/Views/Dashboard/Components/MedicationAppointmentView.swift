@@ -103,32 +103,75 @@ struct MedicationView: View {
 }
 
 struct AppointmentView: View {
-    let nextAppointment: Date
+    @StateObject private var viewModel = AppointmentViewModel()
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Appointments")
                 .font(.headline)
             
-            HStack {
-                VStack(alignment: .leading) {
-                    Text("Upcoming")
-                        .font(.subheadline)
-                    HStack {
-                        Text("\(nextAppointment, formatter: dayFormatter)")
+            VStack(alignment: .leading) {
+                if viewModel.isLoading {
+                    ProgressView()
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding()
+                } else if let errorMessage = viewModel.errorMessage {
+                    VStack {
+                        Text(errorMessage)
                             .foregroundColor(.red)
-                        Text(nextAppointment, formatter: monthFormatter)
+                            .font(.subheadline)
+                        Button("Retry") {
+                            viewModel.fetchAppointments()
+                        }
+                        .font(.caption)
                     }
-                    .font(.headline)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding()
+                } else if let nextAppointment = viewModel.appointments.first {
+                    HStack {
+                        VStack(alignment: .leading) {
+                            Text("Upcoming")
+                                .font(.subheadline)
+                            Text(nextAppointment.title ?? "")
+                                .font(.headline)
+                            HStack {
+                                Text("\(nextAppointment.date ?? Date(), formatter: dayFormatter)")
+                                    .foregroundColor(.red)
+                                Text(nextAppointment.date ?? Date(), formatter: monthFormatter)
+                                Text(nextAppointment.date ?? Date(), formatter: timeFormatter)
+                            }
+                            .font(.subheadline)
+                            
+                            if let location = nextAppointment.location, !location.isEmpty {
+                                HStack {
+                                    Image(systemName: "location")
+                                    Text(location)
+                                        .font(.subheadline)
+                                }
+                            }
+                        }
+                        
+                        Spacer()
+                    }
+                } else {
+                    HStack {
+                        VStack(alignment: .leading) {
+                            Text("No upcoming appointments")
+                                .font(.subheadline)
+                        }
+                        
+                        Spacer()
+                    }
                 }
-                
-                Spacer()
             }
             .padding()
             .background(Color(.systemBackground))
             .cornerRadius(12)
         }
         .contentShape(Rectangle())
+        .onAppear {
+            viewModel.fetchAppointments()
+        }
     }
     
     private var dayFormatter: DateFormatter {
@@ -142,16 +185,20 @@ struct AppointmentView: View {
         formatter.dateFormat = "MMM"
         return formatter
     }
+    
+    private var timeFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "h:mm a"
+        return formatter
+    }
 }
 
 struct MedicationAppointmentRow: View {
-    let nextAppointment: Date
-    
     var body: some View {
         HStack(spacing: 16) {
             MedicationView()
             NavigationLink(destination: AppointmentsListView()) {
-                AppointmentView(nextAppointment: nextAppointment)
+                AppointmentView()
             }
             .buttonStyle(PlainButtonStyle())
         }
